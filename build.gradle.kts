@@ -36,6 +36,11 @@ dependencies {
 
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        // Real JVM default methods only: no forwarding stubs for the platform's interface defaults,
+        // which the plugin verifier would report as internal/deprecated API use.
+        jvmDefault.set(org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode.NO_COMPATIBILITY)
+    }
 }
 
 intellijPlatform {

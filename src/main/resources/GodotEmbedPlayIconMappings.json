@@ -1,0 +1,8 @@
+{
+  "icons": {
+    "expui": {
+      "playPreview.svg": "icons/playPreview.svg",
+      "runConfig.svg": "icons/runConfig.svg"
+    }
+  }
+}

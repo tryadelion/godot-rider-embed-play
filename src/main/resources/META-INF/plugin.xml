@@ -37,12 +37,14 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- New UI icons in icons/expui, mapped to the classic ones -->
+        <iconMapper mappingFile="GodotEmbedPlayIconMappings.json"/>
         <configurationType implementation="com.sleepyfant.godotembedplay.run.GelConfigurationType"/>
         <runConfigurationProducer implementation="com.sleepyfant.godotembedplay.run.GelSceneConfigurationProducer"/>
         <toolWindow id="Play Preview"
                     anchor="right"
                     canCloseContents="true"
-                    icon="/icons/godot.svg"
+                    icon="/icons/playPreview.svg"
                     factoryClass="com.sleepyfant.godotembedplay.view.GelToolWindowFactory"/>
     </extensions>
 </idea-plugin>

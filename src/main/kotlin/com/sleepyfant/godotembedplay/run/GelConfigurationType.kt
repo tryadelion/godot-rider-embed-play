@@ -12,7 +12,7 @@ import com.intellij.openapi.util.NotNullLazyValue
 import javax.swing.Icon
 
 object GelIcons {
-    val GODOT: Icon = IconLoader.getIcon("/icons/godot.svg", GelIcons::class.java)
+    val GODOT: Icon = IconLoader.getIcon("/icons/runConfig.svg", GelIcons::class.java)
 }
 
 class GelConfigurationType : ConfigurationTypeBase(

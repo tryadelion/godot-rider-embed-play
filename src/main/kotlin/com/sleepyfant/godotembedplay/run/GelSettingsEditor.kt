@@ -17,16 +17,16 @@ class GelSettingsEditor(private val project: Project) : SettingsEditor<GelRunCon
 
     private val scene = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(
-            FileChooserDescriptorFactory.createSingleFileDescriptor("tscn").withTitle("Select Scene"), project))
+            FileChooserDescriptorFactory.singleFile().withExtensionFilter("tscn").withTitle("Select Scene"), project))
     }
     private val projectDir = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(
-            FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle("Godot Project Directory"), project))
+            FileChooserDescriptorFactory.singleDir().withTitle("Godot Project Directory"), project))
     }
     private val godotExecutable = JBTextField()
     private val launcherScript = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(
-            FileChooserDescriptorFactory.createSingleFileDescriptor().withTitle("Launcher Script"), project))
+            FileChooserDescriptorFactory.singleFile().withTitle("Launcher Script"), project))
     }
     private val launcherArgs = JBTextField()
     private val godotArgs = JBTextField()
