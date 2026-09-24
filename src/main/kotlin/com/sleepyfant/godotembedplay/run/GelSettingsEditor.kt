@@ -52,7 +52,7 @@ class GelSettingsEditor(private val project: Project) : SettingsEditor<GelRunCon
             row("Script:") {
                 cell(launcherScript).align(AlignX.FILL)
                     .comment("Runs instead of the executable; must end with <code>exec godot --path . \"\$@\"</code> " +
-                        "so the Godot arguments pass through (e.g. tools/gpu_run.sh)")
+                        "so the Godot arguments pass through, e.g. a script that sets up the environment first")
             }
             row("Script args:") { cell(launcherArgs).align(AlignX.FILL).comment("Passed before the Godot arguments") }
         }
