@@ -5,3 +5,11 @@ build/
 *.iml
 local.properties
 .kotlin/
+
+# signing / publishing secrets: never commit
+*.pem
+*.crt
+*.key
+*.p12
+.env
+.env.*

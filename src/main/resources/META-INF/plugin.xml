@@ -1,15 +1,36 @@
 <idea-plugin>
-    <id>com.sleepyfant.godot-extended-launch</id>
-    <name>Godot Extended Launch</name>
+    <id>com.sleepyfant.godot-embed-play</id>
+    <name>Godot Embed Play</name>
     <vendor>Sleepyfant Software</vendor>
     <description><![CDATA[
-        Runs a Godot 4 scene and shows it inside an IDE tool window, with mouse and keyboard
-        forwarded to the game. Works in Rider, IntelliJ IDEA and every other IntelliJ-based IDE.
+        <p>Play your <b>Godot 4</b> scenes right inside Rider, IntelliJ IDEA or any other JetBrains IDE.
+        No extra game window: the scene runs in a dockable <b>Godot</b> tool window next to your code.</p>
+
+        <h3>Features</h3>
         <ul>
-            <li>"Godot Scene" run configuration: scene, project dir, rendering driver, optional launcher script.</li>
-            <li>Right-click any <code>.tscn</code> &rarr; Run.</li>
-            <li>Godot renders normally (Vulkan/Metal, compute shaders included); frames stream to the IDE.</li>
+            <li><b>Godot Scene run configuration</b>: pick a <code>.tscn</code>, or right-click one and choose Run.
+                Works with your own launcher scripts.</li>
+            <li><b>Full renderer</b>: Forward+, Vulkan or Metal, compute shaders and all. Godot renders normally
+                and the frames stream into the IDE.</li>
+            <li><b>Follows the panel</b>: resize or re-dock the tool window and the game viewport follows,
+                honouring your project's stretch settings. Sharp on HiDPI and Retina screens.</li>
+            <li><b>Hover-based input</b>: point at the game and the mouse and keyboard go to it; move away and your
+                editor has them back. Drag gestures continue outside the panel, and the cursor returns to where
+                you pressed.</li>
+            <li><b>Windowless on macOS</b>: no stray Godot window, no Dock icon, and a game that captures the
+                mouse can't take over your cursor.</li>
+            <li><b>Breakpoints</b>: with the Godot editor's debug server open, breakpoints and stepping work
+                through Rider's GDScript debugger, and the view shows a pause overlay while stopped.</li>
         </ul>
+
+        <h3>Requirements</h3>
+        <ul>
+            <li>Godot 4 editor build (tested with 4.7) on your <code>PATH</code>, or its path set in the run
+                configuration.</li>
+            <li>Windowless mode and the debugger integration are macOS only for now.</li>
+        </ul>
+
+        <p>Made by <b>Sleepyfant Software</b>.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>

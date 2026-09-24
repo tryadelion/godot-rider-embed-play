@@ -1,5 +1,5 @@
 extends SceneTree
-## Godot Extended Launch shim.
+## Godot Embed Play shim.
 ##
 ## Started by the IDE plugin with:
 ##   godot --path <project> [--rendering-driver X] --resolution 64x64 \
@@ -121,7 +121,7 @@ func _parse_args() -> void:
 
 func _hide_window() -> void:
 	var win: Window = root
-	win.title = "Godot Extended Launch (hidden host window)"
+	win.title = "Godot Embed Play (hidden host window)"
 	# Projects may start maximized/fullscreen; size and position are ignored until windowed.
 	win.mode = Window.MODE_WINDOWED
 	win.borderless = true

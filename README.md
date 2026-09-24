@@ -1,94 +1,143 @@
-# Godot Extended Launch
+<p align="center">
+  <img src="docs/images/logo.png" width="128" height="128" alt="Godot Embed Play logo">
+</p>
 
-IntelliJ-platform plugin (Rider, IDEA, PhpStorm, …) that runs a Godot 4 scene and shows it
-**inside a tool window**, with mouse and keyboard forwarded to the game. No floating Godot window.
+<h1 align="center">Godot Embed Play</h1>
 
-```
-IDE                                   Godot process
-┌──────────────────────┐   TCP :n     ┌─────────────────────────────┐
-│ "Godot" tool window  │ ◄── frames ──│ gel_shim.gd (-s)            │
-│  GelViewPanel        │ ── input ──► │  SubViewport ← your scene   │
-│  (Swing, RGBA8)      │ ── resize ─► │  real OS window: 64×64,     │
-└──────────────────────┘              │  borderless, unfocusable,   │
-                                      │  click-through, in a corner │
-                                      └─────────────────────────────┘
-```
+<p align="center">
+  Play your Godot 4 scenes inside Rider, IntelliJ IDEA and every other JetBrains IDE.<br>
+  No extra game window: the scene runs in a dockable tool window next to your code.
+</p>
 
-Godot renders exactly as usual (Vulkan/Metal, Forward+, compute shaders). Each frame is read back
-from the GPU asynchronously (`RenderingDevice.texture_get_data_async`, Godot ≥ 4.4) and streamed as
-raw RGBA8 over localhost. Latency ≈ 1–2 frames.
+<p align="center"><i>Created by Sleepyfant Software</i></p>
 
-## Build
+---
 
-Requires a JDK 17+ to run Gradle (a JDK 21 toolchain is auto-provisioned for compilation).
+## Features
 
-```sh
-# compile against an installed IDE instead of downloading Rider (~1.5 GB):
-echo 'gel.localIde=/Users/you/Applications/Rider.app' > local.properties
-./gradlew buildPlugin
-# -> build/distributions/godot-extended-launch-<version>.zip
-```
+- **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
+  Your own launcher scripts work too.
+- **The full renderer.** Forward+, Vulkan or Metal, compute shaders and all. Godot renders exactly as it
+  normally does; the frames stream into the IDE.
+- **Follows the panel.** Resize or re-dock the *Godot* tool window and the game viewport follows,
+  honouring your project's stretch settings. Sharp on HiDPI and Retina screens.
+- **Hover-based input.** Point at the game and the mouse and keyboard go to it. Move away and your editor
+  has them back. Drag gestures continue outside the panel, and the cursor returns to where you pressed.
+- **Windowless on macOS.** No stray Godot window, no Dock icon, and a game that captures the mouse can't
+  take over your cursor.
+- **Breakpoints through the Godot editor.** With the editor's debug server open, breakpoints and stepping
+  work through Rider's GDScript debugger, and the view shows a pause overlay while the game is stopped.
 
-Install: *Settings → Plugins → ⚙ → Install Plugin from Disk…* → pick the zip.
+## Requirements
 
-## Use
+| | |
+|---|---|
+| IDE | Any JetBrains IDE, 2025.2 or newer (Rider, IntelliJ IDEA, PhpStorm, …) |
+| Godot | Godot 4 **editor** build, tested with 4.7. On your `PATH`, or its path set in the run configuration |
+| OS | macOS, Windows, Linux. Windowless mode and the debugger integration are macOS only for now |
 
-1. **Run configuration** *Godot Scene*:
-   - *Scene*: `res://demo/m4/foam_lab.tscn` (or a project-relative path)
-   - *Project directory*: folder with `project.godot` (empty = IDE project root)
-   - *Godot executable*: `godot` on `PATH`, or a full path
-   - *Rendering driver*: e.g. `vulkan` → `--rendering-driver vulkan`
-   - *Launcher script* (optional): a script that prepares things and ends with
-     `exec godot --path . "$@"` — e.g. `tools/gpu_run.sh`. Put script-specific flags such as
-     `--vulkan` into *Script args*.
-2. Or right-click a `.tscn` → **Run**. Set defaults (launcher script, driver) once in
-   *Run → Edit Configurations → Edit configuration templates → Godot Scene*; produced configs inherit them.
-3. The *Godot* tool window opens with one tab per running scene. Click into it to send input;
-   resize it and the viewport follows. *Stop* or closing the tab quits Godot. Console output is in
-   the normal Run window.
+## Installation
 
-## How the shim gets into the project
+- **From JetBrains Marketplace:** *Settings → Plugins → Marketplace*, search for **Godot Embed Play**,
+  click **Install**.
+- **From a file:** *Settings → Plugins → ⚙ → Install Plugin from Disk…* and pick the downloaded zip.
 
-At launch the plugin writes `gel_shim.gd` to `<project>/.godot/gel/` (the `.godot` cache folder is
-already git-ignored in every Godot project) and starts Godot with
-`--resolution 64x64 -s res://.godot/gel/gel_shim.gd -- --gel-port=… --gel-scene=…`.
-With `-s`, Godot skips the main scene but still registers autoloads, so the scene runs in its normal
-environment, only inside a `SubViewport` instead of the root window.
+## Quick start
+
+1. Open your Godot project folder (the one with `project.godot`) in the IDE.
+2. Right-click any `.tscn` file → **Run '<scene>'**.
+3. The **Godot** tool window opens with the running scene. Point at it and play.
+   **Stop**, the Run window's stop button or closing the tab ends the game. Console output appears in the
+   normal Run window.
+
+To change the defaults for every scene, such as a launcher script or the rendering driver, edit the
+template once: *Run → Edit Configurations → Edit configuration templates → Godot Scene*.
+
+## Run configuration
+
+| Option | What it does |
+|---|---|
+| Scene | `res://path/to/scene.tscn`, or a path relative to the project directory |
+| Project directory | Folder containing `project.godot`. Empty means the IDE project root |
+| Godot executable | `godot` on your `PATH`, or a full path |
+| Rendering driver | Passed as `--rendering-driver`, for example `vulkan` or `metal` |
+| Extra Godot args | Anything else to pass to Godot |
+| Launcher script | Optional. Runs instead of the executable and must end with `exec godot --path . "$@"`, so the plugin's arguments pass through |
+| Script args | Passed to the launcher script before the Godot arguments |
+| Render at native (HiDPI) resolution | On by default. Off renders at half resolution on Retina screens, for speed |
+| Stream FPS cap | Frames sent to the IDE per second, default 60. 0 sends every frame. The game itself always runs uncapped |
+| Windowless embedded mode | macOS, on by default. No Godot window, and mouse capture never touches your cursor |
+| Godot editor debug port | Where the Godot editor's debug server listens, default 6007. 0 disables the relay |
+| Synchronous GPU readback | Slower fallback for renderers without asynchronous readback |
 
 ## Input
 
-Hover-based, no capture:
+- **Pointer over the view:** the view takes keyboard focus, and the mouse and keys go to the game.
+- **Pointer leaves:** focus returns to where it was, usually the editor. Keys still held are released in
+  the game.
+- **Mouse button held:** the press point is the anchor. While any button is held, motion keeps going to
+  the game even outside the view, for orbiting or dragging. On release the cursor jumps back to the anchor.
 
-- pointer over the view: the view takes keyboard focus, mouse and keys go to the game;
-- pointer leaves: focus returns to where it was (usually the editor), held keys are released;
-- press a mouse button inside: that spot is the anchor. While any button is held, motion keeps going to
-  the game even outside the view (orbit, drag). On release the cursor jumps back to the anchor.
+The cursor is never hidden or locked, whatever mouse mode the game sets. The game's cursor shape is mirrored.
 
-The cursor is never hidden or locked, whatever `Input.mouse_mode` the game sets. The game's cursor shape
-is mirrored.
+## Debugging with breakpoints (macOS)
 
-On macOS the plugin starts Godot with `--embedded` (the windowless display server the Godot editor uses
-for its Game view) plus `--remote-debug` pointing at a tiny debugger server in the plugin. Godot then has
-no OS window and no Dock icon, and mouse capture requests never touch the real cursor. The debugger
-server works in one of two modes, shown in the view's status bar:
+1. Keep the Godot editor open with your project, as Rider's GDScript debugging already requires.
+2. In the Godot editor, turn on **Debug → Keep Debug Server Open**.
+3. Run the scene with Godot Embed Play. The view's status bar reads *breakpoints: Godot editor / Rider*.
 
-- **Godot editor reachable** on the configured port (default 6007; in the editor enable
-  *Debug → Keep Debug Server Open*): the plugin relays the game's debugger to the editor. The editor, and
-  Rider's GDScript debugger attached to it, own breakpoints, stepping and variables. When the game stops,
-  the view blurs the last frame and shows a pause overlay until it resumes. The editor's Game-view
-  embedding messages are filtered out so the editor does not try to host the game. Rider only follows the
-  editor's *first* debugger session, so no editor-launched game may be running at the same time.
-- **No editor:** the game is told to skip `breakpoint` statements and not break on script errors, since
-  nothing could resume a break. Errors still print to the Run console.
+When a breakpoint hits, the view blurs the last frame and shows a pause overlay. Continue or step from
+Rider's debugger as usual, and the overlay clears when the game resumes.
 
-## Limitations
+Without a reachable Godot editor, the game runs with breakpoints skipped, so it can never freeze with
+nothing to resume it. Errors still print to the Run console.
 
-- Non-macOS: no embedded mode, so a game that captures the mouse still grabs the OS cursor.
+Rider only follows the Godot editor's *first* debugger session. Don't run an editor-launched game at the
+same time.
+
+## Known limitations
+
+- Windows and Linux have no windowless mode, so a game that captures the mouse still grabs the OS cursor.
 - `Input.warp_mouse()` from the game is ignored.
-- IME / dead keys: no. Physical key codes assume a US layout.
-- `get_tree().current_scene` is `null` (the scene is not a child of root).
-- Compatibility renderer (no `RenderingDevice`): falls back to synchronous readback automatically.
+- No IME or dead-key input. Physical key codes assume a US layout.
+- `get_tree().current_scene` is `null`, because the scene is hosted inside a `SubViewport`.
+- The Compatibility renderer falls back to synchronous readback automatically, which is slower.
 
-## Protocol
+## How it works
 
-See the header of `src/main/resources/godot/gel_shim.gd`.
+```
+IDE                                   Godot process
+┌──────────────────────┐   TCP :n     ┌──────────────────────────────┐
+│ "Godot" tool window  │ ◄── frames ──│ gel_shim.gd (-s)             │
+│  (Swing, RGBA8)      │ ── input ──► │  SubViewport ← your scene    │
+│                      │ ── resize ─► │  macOS: --embedded, no window│
+└──────────────────────┘              └──────────────────────────────┘
+```
+
+At launch the plugin writes a small helper script to `<project>/.godot/gel/`. The `.godot` folder is
+already git-ignored in every Godot project. Godot starts with that script instead of the main scene;
+autoloads still register, so the scene runs in its normal environment, only inside a `SubViewport`.
+Each frame is read back from the GPU asynchronously and streamed as raw RGBA8 over localhost, with about
+one to two frames of latency. The wire protocol is documented at the top of
+`src/main/resources/godot/gel_shim.gd`.
+
+## Building from source
+
+Gradle needs a JDK 17 or newer; a JDK 21 toolchain is provisioned automatically.
+
+```sh
+# Optional: compile against an installed IDE instead of downloading Rider (~1.5 GB)
+echo 'gel.localIde=/Applications/Rider.app' > local.properties
+./gradlew buildPlugin
+# -> build/distributions/godot-embed-play-<version>.zip
+```
+
+Publishing to JetBrains Marketplace is described in [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+## Credits
+
+Created by **Sleepyfant Software**.
+
+Godot and the Godot logo are trademarks of the Godot Foundation. The Godot logo is by Andrea Calabró,
+licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Godot Embed Play is an
+independent plugin and is not affiliated with or endorsed by the Godot Foundation or JetBrains.

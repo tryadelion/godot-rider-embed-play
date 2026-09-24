@@ -40,16 +40,42 @@ kotlin {
 
 intellijPlatform {
     pluginConfiguration {
-        id = "com.sleepyfant.godot-extended-launch"
-        name = "Godot Extended Launch"
+        id = "com.sleepyfant.godot-embed-play"
+        name = "Godot Embed Play"
         version = project.version.toString()
+        vendor {
+            name = "Sleepyfant Software"
+        }
         ideaVersion {
             sinceBuild = "252"
             untilBuild = provider { null }
         }
+        changeNotes = """
+            <h3>0.1.0</h3>
+            <ul>
+              <li>First release: run Godot 4 scenes inside an IDE tool window.</li>
+              <li>Windowless mode on macOS; hover-based input with drag gestures.</li>
+              <li>Pause overlay while the Godot editor's debugger (and Rider through it) holds a breakpoint.</li>
+            </ul>
+        """.trimIndent()
     }
     instrumentCode = false
     buildSearchableOptions = false
+
+    // Secrets come from the environment only; never commit them.
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
 }
 
 tasks {

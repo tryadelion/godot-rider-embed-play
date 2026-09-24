@@ -35,7 +35,7 @@ class GelConfigurationType : ConfigurationTypeBase(
     }
 
     companion object {
-        const val ID = "GodotExtendedLaunch"
+        const val ID = "GodotEmbedPlay"
         fun getInstance(): GelConfigurationType =
             ConfigurationTypeUtil.findConfigurationType(GelConfigurationType::class.java)
     }
