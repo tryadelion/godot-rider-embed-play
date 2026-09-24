@@ -24,26 +24,42 @@ For the maintainer (Sleepyfant Software). One-time setup first, then the steps f
 
 The `<vendor>` tag in `plugin.xml` must match this vendor name exactly: `Sleepyfant Software`.
 
-### 2. Signing key
+### 2. Signing key (once)
 
-Marketplace requires signed plugins. Create a key and a certificate once, and keep both **outside the repo**:
+Marketplace only accepts signed plugins. You sign with your own key and a self-made certificate; nothing
+has to be registered with JetBrains. Marketplace checks the signature and then re-signs the plugin with its
+own key.
+
+In a terminal (the folder lives in your home directory, outside the repo):
 
 ```sh
 mkdir -p ~/.sleepyfant-signing && cd ~/.sleepyfant-signing
+
+# 1. Private key, protected by a password you choose (asked twice). Remember it.
 openssl genpkey -aes-256-cbc -algorithm RSA -out private_encrypted.pem -pkeyopt rsa_keygen_bits:4096
+
+# 2. The same key in the form the signer reads (asks for the password).
 openssl rsa -in private_encrypted.pem -out private.pem
+
+# 3. The certificate, valid 10 years. It asks for country, name, etc.:
+#    "Sleepyfant Software" as Organization Name is enough; the rest may stay empty (type a dot).
 openssl req -key private.pem -new -x509 -days 3650 -out chain.crt
+
+chmod 600 ~/.sleepyfant-signing/*
 ```
 
-The build reads them only from environment variables; nothing secret goes into the repo:
+Back up the whole `~/.sleepyfant-signing` folder and the password, for example in a password manager.
+Every future release must be signed with the same key.
 
-| Variable | Value |
-|---|---|
-| `CERTIFICATE_CHAIN` | contents of `chain.crt` |
-| `PRIVATE_KEY` | contents of `private.pem` |
-| `PRIVATE_KEY_PASSWORD` | the password chosen above |
+Signing then is one command from the repo root. It asks for the password and produces the signed zip:
 
-Back them up somewhere safe, such as a password manager. All future releases must be signed with the same key.
+```sh
+scripts/sign-plugin.sh
+# -> build/distributions/godot-embed-play-<version>-signed.zip
+```
+
+For CI, the build also accepts the file *contents* in `CERTIFICATE_CHAIN`, `PRIVATE_KEY` and
+`PRIVATE_KEY_PASSWORD`.
 
 ### 3. Decide before the first upload
 
@@ -69,10 +85,7 @@ Back them up somewhere safe, such as a password manager. All future releases mus
 3. Build and sign:
 
    ```sh
-   export CERTIFICATE_CHAIN="$(cat ~/.sleepyfant-signing/chain.crt)"
-   export PRIVATE_KEY="$(cat ~/.sleepyfant-signing/private.pem)"
-   export PRIVATE_KEY_PASSWORD='…'
-   ./gradlew signPlugin
+   scripts/sign-plugin.sh
    # -> build/distributions/godot-embed-play-<version>-signed.zip
    ```
 

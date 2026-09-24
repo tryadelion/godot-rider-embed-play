@@ -68,9 +68,13 @@ intellijPlatform {
     buildSearchableOptions = false
 
     // Secrets come from the environment only; never commit them.
+    // Either the file paths (CERTIFICATE_CHAIN_FILE / PRIVATE_KEY_FILE, used by scripts/sign-plugin.sh)
+    // or the file contents (CERTIFICATE_CHAIN / PRIVATE_KEY, handy for CI secrets).
     signing {
         certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
         privateKey = providers.environmentVariable("PRIVATE_KEY")
+        certificateChainFile = layout.file(providers.environmentVariable("CERTIFICATE_CHAIN_FILE").map { File(it) })
+        privateKeyFile = layout.file(providers.environmentVariable("PRIVATE_KEY_FILE").map { File(it) })
         password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
     }
     publishing {
