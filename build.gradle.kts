@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.sleepyfant"
-version = "0.1.0"
+version = "0.1.1"
 
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
@@ -56,7 +56,7 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
-            <h3>0.1.0</h3>
+            <h3>0.1.1</h3>
             <ul>
               <li>First release: run Godot 4 scenes inside an IDE tool window.</li>
               <li>Windowless mode on macOS; hover-based input with drag gestures.</li>
