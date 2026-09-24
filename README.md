@@ -153,7 +153,6 @@ echo 'gel.localIde=/Applications/Rider.app' > local.properties
 # -> build/distributions/godot-embed-play-<version>.zip
 ```
 
-Publishing to JetBrains Marketplace is described in [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 ## Feedback
 

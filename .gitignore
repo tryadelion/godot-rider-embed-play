@@ -16,3 +16,7 @@ local.properties
 
 # macOS
 .DS_Store
+
+# maintainer notes and scripts, kept local
+docs/PUBLISHING.md
+scripts/sign-plugin.sh
