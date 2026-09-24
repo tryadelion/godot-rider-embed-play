@@ -88,6 +88,11 @@ intellijPlatform {
 }
 
 tasks {
+    // The Gradle plugin does not declare that the check consumes signPlugin's output; Gradle 9 rejects that.
+    verifyPluginSignature {
+        dependsOn(signPlugin)
+    }
+
     // Ship the license and attribution inside the plugin jar.
     processResources {
         from(files("LICENSE", "NOTICE")) {
