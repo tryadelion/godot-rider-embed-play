@@ -33,6 +33,22 @@
 - **Breakpoints through the Godot editor.** With the editor's debug server open, breakpoints and stepping
   work through Rider's GDScript debugger, and the view shows a pause overlay while the game is stopped.
 
+## Planned features
+
+- [x] Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
+- [x] Full renderer: Forward+, Vulkan or Metal, compute shaders included
+- [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
+- [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
+- [x] Windowless mode on macOS: no Godot window, no cursor capture
+- [x] Pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
+- [ ] Windows support (tested)
+- [ ] Linux support (tested)
+- [ ] Embedded Godot editor: stream the editor's 3D and 2D viewports into Rider, paired with a running Godot editor
+- [ ] Editor viewport layouts: 1, 2, 3 or 4 viewports
+- [ ] Live scene hierarchy in Rider, with selection synced to the editor
+- [ ] Properties panel: edit common node properties from Rider, with Godot's undo history
+- [ ] Properties panel: nested resources, arrays and dictionaries
+
 ## Requirements
 
 | | |
