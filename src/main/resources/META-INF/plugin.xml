@@ -19,7 +19,7 @@
                 you pressed.</li>
             <li><b>Windowless on macOS</b>: no stray Godot window, no Dock icon, and a game that captures the
                 mouse can't take over your cursor.</li>
-            <li><b>Breakpoints</b>: with the Godot editor's debug server open, breakpoints and stepping work
+            <li>&#9888;&#65039; <b>Breakpoints (experimental)</b>: with the Godot editor's debug server open, breakpoints and stepping work
                 through Rider's GDScript debugger, and the view shows a pause overlay while stopped.</li>
         </ul>
 

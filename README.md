@@ -30,7 +30,7 @@
   has them back. Drag gestures continue outside the panel, and the cursor returns to where you pressed.
 - **Windowless on macOS.** No stray Godot window, no Dock icon, and a game that captures the mouse can't
   take over your cursor.
-- **Breakpoints through the Godot editor.** With the editor's debug server open, breakpoints and stepping
+- ⚠️ **Breakpoints through the Godot editor (experimental).** With the editor's debug server open, breakpoints and stepping
   work through Rider's GDScript debugger, and the view shows a pause overlay while the game is stopped.
 
 ## Planned features
@@ -40,7 +40,7 @@
 - [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
 - [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
 - [x] Windowless mode on macOS: no Godot window, no cursor capture
-- [x] Pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
+- [x] ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
 - [ ] Windows support (tested)
 - [ ] Linux support (tested)
 - [ ] Embedded Godot editor: stream the editor's 3D and 2D viewports into Rider, paired with a running Godot editor
@@ -101,7 +101,9 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 
 The cursor is never hidden or locked, whatever mouse mode the game sets. The game's cursor shape is mirrored.
 
-## Debugging with breakpoints (macOS)
+## Debugging with breakpoints (macOS, ⚠️ experimental)
+
+This works, but hasn't been tested much yet. Reports are very welcome.
 
 1. Keep the Godot editor open with your project, as Rider's GDScript debugging already requires.
 2. In the Godot editor, turn on **Debug → Keep Debug Server Open**.
