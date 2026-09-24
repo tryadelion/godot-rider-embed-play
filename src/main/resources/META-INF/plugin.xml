@@ -4,7 +4,7 @@
     <vendor>Sleepyfant Software</vendor>
     <description><![CDATA[
         <p>Play your <b>Godot 4</b> scenes right inside Rider, IntelliJ IDEA or any other JetBrains IDE.
-        No extra game window: the scene runs in a dockable <b>Godot Play</b> tool window next to your code.</p>
+        No extra game window: the scene runs in a dockable <b>Play Preview</b> tool window next to your code.</p>
 
         <h3>Features</h3>
         <ul>
@@ -39,7 +39,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <configurationType implementation="com.sleepyfant.godotembedplay.run.GelConfigurationType"/>
         <runConfigurationProducer implementation="com.sleepyfant.godotembedplay.run.GelSceneConfigurationProducer"/>
-        <toolWindow id="Godot Play"
+        <toolWindow id="Play Preview"
                     anchor="right"
                     canCloseContents="true"
                     icon="/icons/godot.svg"

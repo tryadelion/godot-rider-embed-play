@@ -19,7 +19,7 @@
   Your own launcher scripts work too.
 - **The full renderer.** Forward+, Vulkan or Metal, compute shaders and all. Godot renders exactly as it
   normally does; the frames stream into the IDE.
-- **Follows the panel.** Resize or re-dock the *Godot Play* tool window and the game viewport follows,
+- **Follows the panel.** Resize or re-dock the *Play Preview* tool window and the game viewport follows,
   honouring your project's stretch settings. Sharp on HiDPI and Retina screens.
 - **Hover-based input.** Point at the game and the mouse and keyboard go to it. Move away and your editor
   has them back. Drag gestures continue outside the panel, and the cursor returns to where you pressed.
@@ -46,7 +46,7 @@
 
 1. Open your Godot project folder (the one with `project.godot`) in the IDE.
 2. Right-click any `.tscn` file → **Run '<scene>'**.
-3. The **Godot Play** tool window opens with the running scene. Point at it and play.
+3. The **Play Preview** tool window opens with the running scene. Point at it and play.
    **Stop**, the Run window's stop button or closing the tab ends the game. Console output appears in the
    normal Run window.
 
@@ -108,7 +108,7 @@ same time.
 ```
 IDE                                   Godot process
 ┌──────────────────────┐   TCP :n     ┌──────────────────────────────┐
-│ "Godot Play" window  │ ◄── frames ──│ gel_shim.gd (-s)             │
+│ "Play Preview" window│ ◄── frames ──│ gel_shim.gd (-s)             │
 │  (Swing, RGBA8)      │ ── input ──► │  SubViewport ← your scene    │
 │                      │ ── resize ─► │  macOS: --embedded, no window│
 └──────────────────────┘              └──────────────────────────────┘

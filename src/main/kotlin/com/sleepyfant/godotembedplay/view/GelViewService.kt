@@ -12,7 +12,7 @@ import com.sleepyfant.godotembedplay.session.GelSession
 @Service(Service.Level.PROJECT)
 class GelViewService(private val project: Project) {
 
-    /** Adds a tab for the session to the "Godot Play" tool window and shows it. Must run on the EDT. */
+    /** Adds a tab for the session to the "Play Preview" tool window and shows it. Must run on the EDT. */
     fun attach(session: GelSession, hiDpi: Boolean = true) {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID) ?: return
         val manager = toolWindow.contentManager
@@ -29,7 +29,7 @@ class GelViewService(private val project: Project) {
     }
 
     companion object {
-        const val TOOL_WINDOW_ID = "Godot Play"
+        const val TOOL_WINDOW_ID = "Play Preview"
         val PLACEHOLDER: Key<Boolean> = Key.create("gel.placeholder")
         fun getInstance(project: Project): GelViewService = project.service()
     }
