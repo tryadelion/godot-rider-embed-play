@@ -4,7 +4,7 @@
     <vendor>Sleepyfant Software</vendor>
     <description><![CDATA[
         <p>Play your <b>Godot 4</b> scenes right inside Rider, IntelliJ IDEA or any other JetBrains IDE.
-        No extra game window: the scene runs in a dockable <b>Godot</b> tool window next to your code.</p>
+        No extra game window: the scene runs in a dockable <b>Godot Play</b> tool window next to your code.</p>
 
         <h3>Features</h3>
         <ul>
@@ -27,10 +27,11 @@
         <ul>
             <li>Godot 4 editor build (tested with 4.7) on your <code>PATH</code>, or its path set in the run
                 configuration.</li>
+            <li>Tested on macOS. Windows and Linux should work but are untested: feedback is very welcome.</li>
             <li>Windowless mode and the debugger integration are macOS only for now.</li>
         </ul>
 
-        <p>Made by <b>Sleepyfant Software</b>.</p>
+        <p>Made by <b>Sleepyfant Software</b>. Open source under the Apache License 2.0.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -38,7 +39,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <configurationType implementation="com.sleepyfant.godotembedplay.run.GelConfigurationType"/>
         <runConfigurationProducer implementation="com.sleepyfant.godotembedplay.run.GelSceneConfigurationProducer"/>
-        <toolWindow id="Godot"
+        <toolWindow id="Godot Play"
                     anchor="right"
                     canCloseContents="true"
                     icon="/icons/godot.svg"

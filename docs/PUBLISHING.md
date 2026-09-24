@@ -47,8 +47,8 @@ Back them up somewhere safe, such as a password manager. All future releases mus
 
 ### 3. Decide before the first upload
 
-- **License.** The upload form asks for one. For open source, add a `LICENSE` file (for example MIT or
-  Apache-2.0) and link it. For closed source, link an EULA instead.
+- **License:** decided. Apache License 2.0 (`LICENSE`, credit in `NOTICE`); pick *Apache 2.0* in the upload
+  form and link the LICENSE file once the repo is public.
 - **Source code URL.** Optional, but it builds trust. The repo has no remote yet.
 - **Name check.** "Godot" is a trademark of the Godot Foundation. Read its trademark policy
   (<https://godot.foundation>) and confirm "Godot Embed Play" and the logo, which is based on the Godot

@@ -79,6 +79,12 @@ intellijPlatform {
 }
 
 tasks {
+    // Ship the license and attribution inside the plugin jar.
+    processResources {
+        from(files("LICENSE", "NOTICE")) {
+            into("META-INF")
+        }
+    }
     wrapper {
         gradleVersion = "9.6.0"
     }
