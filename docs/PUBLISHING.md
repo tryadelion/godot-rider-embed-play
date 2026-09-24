@@ -54,8 +54,8 @@ Back them up somewhere safe, such as a password manager. All future releases mus
   (<https://godot.foundation>) and confirm "Godot Embed Play" and the logo, which is based on the Godot
   logo, are fine to publish. The README already carries the attribution and a non-affiliation note.
   JetBrains reviewers may ask about third-party names too.
-- **Screenshots.** Add 2–4 to the listing after upload: the Godot tool window next to code, the run
-  configuration, the pause overlay.
+- **Screenshots:** ready in `docs/images/screenshots/`. Upload `play-preview-with-code.png` (first),
+  `play-preview-running.png` and `play-preview-idle.png` on the listing page after the first upload.
 
 ## Every release
 

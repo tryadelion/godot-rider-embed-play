@@ -13,6 +13,11 @@
 
 ---
 
+<p align="center">
+  <img src="docs/images/screenshots/play-preview-with-code.png" width="860"
+       alt="Rider with a scene file open on the left and the same Godot scene running in the Play Preview tool window on the right">
+</p>
+
 ## Features
 
 - **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
