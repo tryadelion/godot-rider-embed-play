@@ -13,3 +13,6 @@ local.properties
 *.p12
 .env
 .env.*
+
+# macOS
+.DS_Store

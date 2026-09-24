@@ -64,8 +64,8 @@ For CI, the build also accepts the file *contents* in `CERTIFICATE_CHAIN`, `PRIV
 ### 3. Decide before the first upload
 
 - **License:** decided. Apache License 2.0 (`LICENSE`, credit in `NOTICE`); pick *Apache 2.0* in the upload
-  form and link the LICENSE file once the repo is public.
-- **Source code URL.** Optional, but it builds trust. The repo has no remote yet.
+  form and link https://github.com/tryadelion/godot-rider-embed-play/blob/main/LICENSE.
+- **Source code URL:** https://github.com/tryadelion/godot-rider-embed-play
 - **Name check.** "Godot" is a trademark of the Godot Foundation. Read its trademark policy
   (<https://godot.foundation>) and confirm "Godot Embed Play" and the logo, which is based on the Godot
   logo, are fine to publish. The README already carries the attribution and a non-affiliation note.
