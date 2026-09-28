@@ -58,7 +58,10 @@ intellijPlatform {
         changeNotes = """
             <h3>0.1.2</h3>
             <ul>
-              <li>Stop turns into Play once the game has ended, restarting the scene in the same tab.</li>
+              <li>Play again: once a game ends, whether by Stop, the Run window or the game quitting on its own,
+                the Play Preview's Stop button turns into Play and starts the scene again.</li>
+              <li>Running a configuration again reuses its stopped tab instead of adding a new one.</li>
+              <li>Stop and Play buttons now show icons.</li>
             </ul>
             <h3>0.1.1</h3>
             <ul>

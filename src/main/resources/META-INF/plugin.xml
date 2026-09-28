@@ -10,6 +10,8 @@
         <ul>
             <li><b>Godot Scene run configuration</b>: pick a <code>.tscn</code>, or right-click one and choose Run.
                 Works with your own launcher scripts.</li>
+            <li><b>Play again</b>: when the game ends, Stop turns into Play and restarts the scene in the same
+                tab.</li>
             <li><b>Full renderer</b>: Forward+, Vulkan or Metal, compute shaders and all. Godot renders normally
                 and the frames stream into the IDE.</li>
             <li><b>Follows the panel</b>: resize or re-dock the tool window and the game viewport follows,

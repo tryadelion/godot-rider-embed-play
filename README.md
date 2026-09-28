@@ -22,6 +22,7 @@
 
 - **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
   Your own launcher scripts work too.
+- **Play again.** When the game ends, **Stop** turns into **Play** and restarts the scene in the same tab.
 - **The full renderer.** Forward+, Vulkan or Metal, compute shaders and all. Godot renders exactly as it
   normally does; the frames stream into the IDE.
 - **Follows the panel.** Resize or re-dock the *Play Preview* tool window and the game viewport follows,
@@ -36,6 +37,7 @@
 ## Planned features
 
 - [x] Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
+- [x] Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
 - [x] Full renderer: Forward+, Vulkan or Metal, compute shaders included
 - [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
 - [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
@@ -156,6 +158,9 @@ echo 'gel.localIde=/Applications/Rider.app' > local.properties
 # -> build/distributions/godot-embed-play-<version>.zip
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Feedback
 
