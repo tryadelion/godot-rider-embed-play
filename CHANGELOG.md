@@ -3,7 +3,7 @@
 ## 0.1.2 — 2026-09-28
 
 - **Play again.** Once a game ends, whether by Stop, the Run window or the game quitting on its own,
-  the Play Preview's Stop button turns into **Play** and starts the scene again.
+  the Play Preview's Stop button turns into **Play** and lets you start that scene again from the preview.
 - Running a configuration again reuses its stopped tab instead of adding a new one.
 - Stop and Play buttons now show icons.
 

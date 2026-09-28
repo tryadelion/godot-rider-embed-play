@@ -59,7 +59,7 @@ intellijPlatform {
             <h3>0.1.2</h3>
             <ul>
               <li>Play again: once a game ends, whether by Stop, the Run window or the game quitting on its own,
-                the Play Preview's Stop button turns into Play and starts the scene again.</li>
+                the Play Preview's Stop button turns into Play and lets you start that scene again from the preview.</li>
               <li>Running a configuration again reuses its stopped tab instead of adding a new one.</li>
               <li>Stop and Play buttons now show icons.</li>
             </ul>
