@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.sleepyfant"
-version = "0.1.1"
+version = "0.1.2"
 
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
@@ -56,6 +56,10 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.1.2</h3>
+            <ul>
+              <li>Stop turns into Play once the game has ended, restarting the scene in the same tab.</li>
+            </ul>
             <h3>0.1.1</h3>
             <ul>
               <li>First release: run Godot 4 scenes inside an IDE tool window.</li>

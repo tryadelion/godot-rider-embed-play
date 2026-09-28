@@ -1,5 +1,6 @@
 package com.sleepyfant.godotembedplay.view
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
@@ -52,20 +53,25 @@ import kotlin.math.abs
  *
  * The cursor is never hidden or locked. The game's mouse mode is ignored (in embedded mode Godot does not
  * touch the real cursor either); only its cursor shape is mirrored.
+ *
+ * Once the game ends (Stop, the Run window, or the game quitting on its own) the Stop button turns into
+ * Play, which runs the same configuration again via [replay].
  */
 class GelViewPanel(
     private val project: Project,
     private val session: GelSession,
     private val hiDpi: Boolean,
+    private val replay: () -> Unit,
 ) : JPanel(BorderLayout()), GelSession.Listener {
 
     private val canvas = Canvas()
     private val status = JBLabel("Waiting for Godot to connect…")
     private val hint = JBLabel("").apply { foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY) }
-    private val stopButton = JButton("Stop")
+    private val stopButton = JButton("Stop", AllIcons.Actions.Suspend)
 
     @Volatile private var image: BufferedImage? = null
     @Volatile private var stopped = false
+    val isStopped: Boolean get() = stopped
     // Where the last image was drawn (logical px) and its size in render px; used to map the mouse back.
     @Volatile private var drawX = 0.0
     @Volatile private var drawY = 0.0
@@ -102,7 +108,7 @@ class GelViewPanel(
         bar.add(debugLabel)
         add(bar, BorderLayout.NORTH)
         add(canvas, BorderLayout.CENTER)
-        stopButton.addActionListener { session.close() }
+        stopButton.addActionListener { if (stopped) replay() else session.close() }
         session.listener = this
     }
 
@@ -150,7 +156,8 @@ class GelViewPanel(
         image = null
         ApplicationManager.getApplication().invokeLater {
             status.text = "Stopped: $reason"
-            stopButton.isEnabled = false
+            stopButton.text = "Play"
+            stopButton.icon = AllIcons.Actions.Execute
             anchor = null
             heldButtons = 0
             paused = false

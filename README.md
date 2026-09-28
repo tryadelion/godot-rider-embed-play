@@ -68,8 +68,9 @@
 1. Open your Godot project folder (the one with `project.godot`) in the IDE.
 2. Right-click any `.tscn` file → **Run '<scene>'**.
 3. The **Play Preview** tool window opens with the running scene. Point at it and play.
-   **Stop**, the Run window's stop button or closing the tab ends the game. Console output appears in the
-   normal Run window.
+   **Stop**, the Run window's stop button or closing the tab ends the game. Once the game has ended,
+   **Stop** turns into **Play**, which starts the scene again in the same tab. Console output appears in
+   the normal Run window.
 
 To change the defaults for every scene, such as a launcher script or the rendering driver, edit the
 template once: *Run → Edit Configurations → Edit configuration templates → Godot Scene*.
