@@ -23,6 +23,10 @@
 - **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
   Your own launcher scripts work too.
 - **Play again.** When the game ends, **Stop** turns into **Play** and restarts the scene in the same tab.
+- **Screen shapes.** Preview at 21:9, 16:10, 16:9, 4:3 or a phone screen (portrait or sideways), fitted to
+  the panel's width and height, or let the game fill the whole panel.
+- **Screenshots, mute and game speed** right in the preview's toolbar. Screenshots can render at 2× or 4×
+  the view's resolution.
 - **The full renderer.** Forward+, Vulkan or Metal, compute shaders and all. Godot renders exactly as it
   normally does; the frames stream into the IDE.
 - **Follows the panel.** Resize or re-dock the *Play Preview* tool window and the game viewport follows,
@@ -38,6 +42,9 @@
 
 - [x] Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
 - [x] Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
+- [x] Screen shape presets: 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) and Narrow Mobile (20:9), phones portrait or sideways
+- [x] Screenshots at 1×, 2× or 4× the view's resolution, saved as PNG and copied to the clipboard
+- [x] Mute / unmute and game speed (time scale) from the preview
 - [x] Full renderer: Forward+, Vulkan or Metal, compute shaders included
 - [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
 - [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
@@ -93,6 +100,17 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 | Windowless embedded mode | macOS, on by default. No Godot window, and mouse capture never touches your cursor |
 | Godot editor debug port | Where the Godot editor's debug server listens, default 6007. 0 disables the relay |
 | Synchronous GPU readback | Slower fallback for renderers without asynchronous readback |
+
+## Preview toolbar
+
+| Control | What it does |
+|---|---|
+| Stop / Play | Stops the game. Once it has ended, Play runs the same configuration again in the same tab |
+| Screenshot | Renders one frame at 1×, 2× or 4× the view's resolution, saves it as a PNG in `~/Pictures/Godot Embed Play` and copies it to the clipboard. With the `viewport` stretch mode the game renders at its base size, so 2× and 4× are pixel-exact upscales |
+| Mute | Mutes the game's master audio bus. Remembered per project |
+| Speed | Sets `Engine.time_scale`: 0.1× to 4×. Resets to 1× for every run |
+| Screen shape | *Fit panel* uses the whole panel. The presets render the largest rectangle of that shape that fits the panel, with bars around it. Remembered per project |
+| Sideways | Shown for the mobile presets: turns the phone screen to landscape |
 
 ## Input
 

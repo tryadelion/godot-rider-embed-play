@@ -61,7 +61,13 @@ intellijPlatform {
               <li>Play again: once a game ends, whether by Stop, the Run window or the game quitting on its own,
                 the Play Preview's Stop button turns into Play and lets you start that scene again from the preview.</li>
               <li>Running a configuration again reuses its stopped tab instead of adding a new one.</li>
-              <li>Stop and Play buttons now show icons.</li>
+              <li>Screen shapes: preview at 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) or Narrow Mobile (20:9),
+                fitted to the panel's width and height. Phone screens can be turned sideways.</li>
+              <li>Screenshots from the preview toolbar, at 1×, 2× or 4× the view's resolution. Saved as PNG and
+                copied to the clipboard.</li>
+              <li>Mute / unmute the game from the preview.</li>
+              <li>Game speed: set the time scale from 0.1× to 4×.</li>
+              <li>The preview's controls moved into a toolbar row, with status on its own line below.</li>
             </ul>
             <h3>0.1.1</h3>
             <ul>

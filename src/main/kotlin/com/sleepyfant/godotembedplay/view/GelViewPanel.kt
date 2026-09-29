@@ -1,10 +1,21 @@
 package com.sleepyfant.godotembedplay.view
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.DumbAwareToggleAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.JBColor
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.ui.JBUI
@@ -34,7 +45,6 @@ import java.awt.event.MouseWheelEvent
 import java.awt.event.MouseWheelListener
 import java.awt.image.BufferedImage
 import java.lang.ref.WeakReference
-import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
@@ -56,6 +66,9 @@ import kotlin.math.abs
  *
  * Once the game ends (Stop, the Run window, or the game quitting on its own) the Stop button turns into
  * Play, which runs the same configuration again via [replay].
+ *
+ * The toolbar also takes screenshots (optionally above the view's resolution), mutes the game, sets its
+ * time scale and picks the screen shape ([ViewAspect]). Shape, orientation and mute are remembered per project.
  */
 class GelViewPanel(
     private val project: Project,
@@ -67,7 +80,28 @@ class GelViewPanel(
     private val canvas = Canvas()
     private val status = JBLabel("Waiting for Godot to connect…")
     private val hint = JBLabel("").apply { foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY) }
-    private val stopButton = JButton("Stop", AllIcons.Actions.Suspend)
+    private val settings = PropertiesComponent.getInstance(project)
+    private var aspect = ViewAspect.entries.firstOrNull { it.name == settings.getValue(KEY_ASPECT) } ?: ViewAspect.FIT
+    private var sideways = settings.getBoolean(KEY_SIDEWAYS)
+    private var muted = settings.getBoolean(KEY_MUTED)
+    private val toolbar = createToolbar(StopPlayAction(), ScreenshotGroup(), MuteAction())
+    private val rotateToolbar = createToolbar(RotateAction())
+    private val speedBox = ComboBox(SPEEDS).apply {
+        selectedItem = 1f
+        renderer = SimpleListCellRenderer.create("") { formatSpeed(it) }
+        toolTipText = "Game speed (Engine.time_scale)"
+        addActionListener { session.sendTimeScale(selectedItem as Float) }
+    }
+    private val aspectBox = ComboBox(ViewAspect.entries.toTypedArray()).apply {
+        selectedItem = aspect
+        toolTipText = "Screen shape"
+        addActionListener {
+            aspect = selectedItem as ViewAspect
+            settings.setValue(KEY_ASPECT, aspect.name, ViewAspect.FIT.name)
+            rotateToolbar.updateActionsAsync()
+            resizeNow()
+        }
+    }
 
     @Volatile private var image: BufferedImage? = null
     @Volatile private var stopped = false
@@ -101,25 +135,47 @@ class GelViewPanel(
     private val debugLabel = JBLabel("").apply { foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY) }
 
     init {
-        val bar = JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(8), JBUI.scale(2)))
-        bar.add(stopButton)
-        bar.add(status)
-        bar.add(hint)
-        bar.add(debugLabel)
-        add(bar, BorderLayout.NORTH)
+        val controls = JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(4), 0))
+        controls.add(toolbar.component)
+        controls.add(speedBox)
+        controls.add(aspectBox)
+        controls.add(rotateToolbar.component)
+        val info = JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(8), JBUI.scale(2)))
+        info.add(status)
+        info.add(hint)
+        info.add(debugLabel)
+        val top = JPanel(BorderLayout())
+        top.add(controls, BorderLayout.NORTH)
+        top.add(info, BorderLayout.SOUTH)
+        add(top, BorderLayout.NORTH)
         add(canvas, BorderLayout.CENTER)
-        stopButton.addActionListener { if (stopped) replay() else session.close() }
         session.listener = this
+    }
+
+    private fun createToolbar(vararg actions: AnAction): ActionToolbar {
+        val tb = ActionManager.getInstance().createActionToolbar("GodotEmbedPlay.PlayPreview", DefaultActionGroup(*actions), true)
+        tb.targetComponent = this
+        tb.setReservePlaceAutoPopupIcon(false)
+        tb.component.isOpaque = false
+        tb.component.border = JBUI.Borders.empty()
+        return tb
     }
 
     /** Render scale: physical pixels per logical pixel when HiDPI rendering is on, else 1. */
     private fun scale(): Float = if (hiDpi) JBUIScale.sysScale(canvas) else 1f
 
+    private fun resizeNow() {
+        lastSentW = -1
+        pushSize()
+    }
+
     private fun pushSize() {
         val s = scale()
-        val w = (canvas.width * s).toInt()
-        val h = (canvas.height * s).toInt()
-        if (w <= 0 || h <= 0 || (w == lastSentW && h == lastSentH)) return
+        val availW = (canvas.width * s).toInt()
+        val availH = (canvas.height * s).toInt()
+        if (availW <= 0 || availH <= 0) return
+        val (w, h) = aspect.fit(availW, availH, sideways)
+        if (w == lastSentW && h == lastSentH) return
         lastSentW = w
         lastSentH = h
         session.sendResize(w, h)
@@ -131,8 +187,10 @@ class GelViewPanel(
         ApplicationManager.getApplication().invokeLater {
             status.text = hello
             session.debugServer?.relayed?.let { showDebugger(it) }
-            lastSentW = -1
-            pushSize()
+            if (muted) session.sendMute(true)
+            val speed = speedBox.selectedItem as Float
+            if (speed != 1f) session.sendTimeScale(speed)
+            resizeNow()
             bringIdeBack()
         }
     }
@@ -156,8 +214,7 @@ class GelViewPanel(
         image = null
         ApplicationManager.getApplication().invokeLater {
             status.text = "Stopped: $reason"
-            stopButton.text = "Play"
-            stopButton.icon = AllIcons.Actions.Execute
+            toolbar.updateActionsAsync()
             anchor = null
             heldButtons = 0
             paused = false
@@ -175,6 +232,8 @@ class GelViewPanel(
             if (!stopped) canvas.cursor = shapeCursor(shape)
         }
     }
+
+    override fun onScreenshot(image: BufferedImage) = GelScreenshots.save(project, session.title, image)
 
     override fun onDebuggerAttached(relayed: Boolean) {
         ApplicationManager.getApplication().invokeLater { showDebugger(relayed) }
@@ -489,7 +548,79 @@ class GelViewPanel(
         e.consume()
     }
 
+    // ------------------------------------------------------------ toolbar actions
+
+    private inner class StopPlayAction : DumbAwareAction() {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun update(e: AnActionEvent) {
+            e.presentation.text = if (stopped) "Play" else "Stop"
+            e.presentation.description = if (stopped) "Run this scene again" else "Stop the game"
+            e.presentation.icon = if (stopped) AllIcons.Actions.Execute else AllIcons.Actions.Suspend
+        }
+        override fun actionPerformed(e: AnActionEvent) = if (stopped) replay() else session.close()
+    }
+
+    private inner class ScreenshotGroup : DefaultActionGroup("Screenshot", true) {
+        init {
+            templatePresentation.icon = GelViewIcons.SCREENSHOT
+            templatePresentation.description = "Save a PNG to ${GelScreenshots.folder} and copy it to the clipboard"
+            for (factor in SHOT_FACTORS) add(ScreenshotAction(factor))
+        }
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = !stopped && image != null
+        }
+    }
+
+    private inner class ScreenshotAction(private val factor: Int) : DumbAwareAction() {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun update(e: AnActionEvent) {
+            val size = "${imgW * factor}×${imgH * factor}"
+            e.presentation.text = if (factor == 1) "View size ($size)" else "$factor× ($size)"
+            e.presentation.isEnabled = !stopped
+        }
+        override fun actionPerformed(e: AnActionEvent) = session.requestScreenshot(factor)
+    }
+
+    private inner class MuteAction : DumbAwareToggleAction("Mute", "Mute the game's audio", GelViewIcons.SOUND_ON) {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun isSelected(e: AnActionEvent) = muted
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            muted = state
+            settings.setValue(KEY_MUTED, state)
+            session.sendMute(state)
+        }
+        override fun update(e: AnActionEvent) {
+            super.update(e)
+            e.presentation.text = if (muted) "Unmute" else "Mute"
+            e.presentation.icon = if (muted) GelViewIcons.SOUND_OFF else GelViewIcons.SOUND_ON
+        }
+    }
+
+    private inner class RotateAction : DumbAwareToggleAction("Sideways", "Turn the mobile screen to landscape", GelViewIcons.ROTATE) {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun isSelected(e: AnActionEvent) = sideways
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            sideways = state
+            settings.setValue(KEY_SIDEWAYS, state)
+            resizeNow()
+        }
+        override fun update(e: AnActionEvent) {
+            super.update(e)
+            e.presentation.isVisible = aspect.rotatable
+        }
+    }
+
     companion object {
+        private const val KEY_ASPECT = "godotEmbedPlay.aspect"
+        private const val KEY_SIDEWAYS = "godotEmbedPlay.sideways"
+        private const val KEY_MUTED = "godotEmbedPlay.muted"
+        private val SPEEDS = arrayOf(0.1f, 0.25f, 0.5f, 1f, 2f, 4f)
+        private val SHOT_FACTORS = listOf(1, 2, 4)
+
+        private fun formatSpeed(speed: Float): String =
+            (if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()) + "×"
+
         /** Godot DisplayServer.CursorShape -> AWT cursor (closest match). */
         private fun shapeCursor(shape: Int): Cursor = Cursor.getPredefinedCursor(when (shape) {
             1 -> Cursor.TEXT_CURSOR            // IBEAM

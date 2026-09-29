@@ -12,6 +12,10 @@
                 Works with your own launcher scripts.</li>
             <li><b>Play again</b>: when the game ends, Stop turns into Play and restarts the scene in the same
                 tab.</li>
+            <li><b>Screen shapes</b>: preview at 21:9, 16:10, 16:9, 4:3 or a phone screen (portrait or sideways),
+                fitted to the panel's width and height, or let the game fill the whole panel.</li>
+            <li><b>Screenshots, mute and game speed</b> right in the preview's toolbar. Screenshots can render
+                at 2× or 4× the view's resolution.</li>
             <li><b>Full renderer</b>: Forward+, Vulkan or Metal, compute shaders and all. Godot renders normally
                 and the frames stream into the IDE.</li>
             <li><b>Follows the panel</b>: resize or re-dock the tool window and the game viewport follows,
@@ -48,5 +52,6 @@
                     canCloseContents="true"
                     icon="/icons/playPreview.svg"
                     factoryClass="com.sleepyfant.godotembedplay.view.GelToolWindowFactory"/>
+        <notificationGroup id="Godot Embed Play" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>
