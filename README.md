@@ -9,6 +9,13 @@
   No extra game window: the scene runs in a dockable tool window next to your code.
 </p>
 
+<p align="center">
+  <a href="https://plugins.jetbrains.com/plugin/34491-godot-embed-play"><img src="https://img.shields.io/jetbrains/plugin/v/34491?label=version&color=478cbf" alt="Version"></a>
+  <a href="#requirements"><img src="https://img.shields.io/badge/JetBrains%20IDE-252.0%2B-FC801D" alt="Compatible with JetBrains IDE builds 252.0 and newer"></a>
+  <a href="https://plugins.jetbrains.com/plugin/34491-godot-embed-play"><img src="https://img.shields.io/jetbrains/plugin/d/34491?color=478cbf" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-478cbf" alt="License: Apache 2.0"></a>
+</p>
+
 <p align="center"><i>Created by Sleepyfant Software</i></p>
 
 ---
@@ -40,16 +47,16 @@
 
 ## Planned features
 
-- [x] Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
-- [x] Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
-- [x] Screen shape presets: 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) and Narrow Mobile (20:9), phones portrait or sideways
-- [x] Screenshots at 1×, 2× or 4× the view's resolution, saved as PNG and copied to the clipboard
-- [x] Mute / unmute and game speed (time scale) from the preview
-- [x] Full renderer: Forward+, Vulkan or Metal, compute shaders included
-- [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
-- [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
-- [x] Windowless mode on macOS: no Godot window, no cursor capture
-- [x] ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
+- ✅ Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
+- ✅ Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
+- ✅ Screen shape presets: 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) and Narrow Mobile (20:9), phones portrait or sideways
+- ✅ Screenshots at 1×, 2× or 4× the view's resolution, saved as PNG and copied to the clipboard
+- ✅ Mute / unmute and game speed (time scale) from the preview
+- ✅ Full renderer: Forward+, Vulkan or Metal, compute shaders included
+- ✅ Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
+- ✅ Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
+- ✅ Windowless mode on macOS: no Godot window, no cursor capture
+- ✅ ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
 - [ ] Windows support (tested)
 - [ ] Linux support (tested)
 - [ ] Pause and frame step without the debugger, with its own controls in the preview
@@ -81,7 +88,9 @@
 
 ## Installation
 
-- **From JetBrains Marketplace:** *Settings → Plugins → Marketplace*, search for **Godot Embed Play**,
+<a href="https://plugins.jetbrains.com/plugin/34491-godot-embed-play"><img src="https://img.shields.io/badge/Get%20from-JetBrains%20Marketplace-000000?style=for-the-badge&logo=jetbrains&logoColor=white" alt="Get from JetBrains Marketplace" height="36"></a>
+
+- **From a JetBrains IDE:** *Settings → Plugins → Marketplace*, search for **Godot Embed Play**,
   click **Install**.
 - **From a file:** *Settings → Plugins → ⚙ → Install Plugin from Disk…* and pick the downloaded zip.
 
