@@ -52,6 +52,19 @@
 - [x] ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
 - [ ] Windows support (tested)
 - [ ] Linux support (tested)
+- [ ] Pause and frame step without the debugger, with its own controls in the preview
+- [ ] Closed the tab by accident? Start the last scene again straight from the empty Play Preview
+- [ ] One shortcut to run the scene you're looking at, or the scene that uses the script you're editing
+- [ ] Error messages in the Run console that you can click to jump to the right line in your script
+- [ ] Let games move the mouse cursor themselves (`Input.warp_mouse()`)
+- [ ] Typing that works on any keyboard layout, including accents and input methods for other languages
+- [ ] Run several copies of a game side by side, handy for testing multiplayer
+- [ ] Click something in the running game to find its node, then jump to its scene or script
+- [ ] See the running game's scene tree live, not just the editor's
+- [ ] Record a short video or GIF of the preview to share or attach to a bug report
+- [ ] Restart the scene automatically when you save a script or scene
+- [ ] Smoother streaming at very high resolutions, like 4K
+- [ ] Try it with the C# (.NET) version of Godot and confirm it works
 - [ ] Embedded Godot editor: stream the editor's 3D and 2D viewports into Rider, paired with a running Godot editor
 - [ ] Editor viewport layouts: 1, 2, 3 or 4 viewports
 - [ ] Live scene hierarchy in Rider, with selection synced to the editor
