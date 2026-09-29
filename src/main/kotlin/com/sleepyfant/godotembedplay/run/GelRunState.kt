@@ -85,7 +85,7 @@ class GelRunState(env: ExecutionEnvironment, private val config: GelRunConfigura
 
         val project = environment.project
         ApplicationManager.getApplication().invokeLater {
-            if (!project.isDisposed) GelViewService.getInstance(project).attach(session, o.hiDpi)
+            if (!project.isDisposed) GelViewService.getInstance(project).attach(session, o.hiDpi, environment)
         }
         return handler
     }

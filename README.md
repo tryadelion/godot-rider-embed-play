@@ -22,6 +22,11 @@
 
 - **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
   Your own launcher scripts work too.
+- **Play again.** When the game ends, **Stop** turns into **Play** and restarts the scene in the same tab.
+- **Screen shapes.** Preview at 21:9, 16:10, 16:9, 4:3 or a phone screen (portrait or sideways), fitted to
+  the panel's width and height, or let the game fill the whole panel.
+- **Screenshots, mute and game speed** right in the preview's toolbar. Screenshots can render at 2× or 4×
+  the view's resolution.
 - **The full renderer.** Forward+, Vulkan or Metal, compute shaders and all. Godot renders exactly as it
   normally does; the frames stream into the IDE.
 - **Follows the panel.** Resize or re-dock the *Play Preview* tool window and the game viewport follows,
@@ -36,6 +41,10 @@
 ## Planned features
 
 - [x] Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
+- [x] Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
+- [x] Screen shape presets: 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) and Narrow Mobile (20:9), phones portrait or sideways
+- [x] Screenshots at 1×, 2× or 4× the view's resolution, saved as PNG and copied to the clipboard
+- [x] Mute / unmute and game speed (time scale) from the preview
 - [x] Full renderer: Forward+, Vulkan or Metal, compute shaders included
 - [x] Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
 - [x] Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
@@ -43,6 +52,19 @@
 - [x] ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
 - [ ] Windows support (tested)
 - [ ] Linux support (tested)
+- [ ] Pause and frame step without the debugger, with its own controls in the preview
+- [ ] Closed the tab by accident? Start the last scene again straight from the empty Play Preview
+- [ ] One shortcut to run the scene you're looking at, or the scene that uses the script you're editing
+- [ ] Error messages in the Run console that you can click to jump to the right line in your script
+- [ ] Let games move the mouse cursor themselves (`Input.warp_mouse()`)
+- [ ] Typing that works on any keyboard layout, including accents and input methods for other languages
+- [ ] Run several copies of a game side by side, handy for testing multiplayer
+- [ ] Click something in the running game to find its node, then jump to its scene or script
+- [ ] See the running game's scene tree live, not just the editor's
+- [ ] Record a short video or GIF of the preview to share or attach to a bug report
+- [ ] Restart the scene automatically when you save a script or scene
+- [ ] Smoother streaming at very high resolutions, like 4K
+- [ ] Try it with the C# (.NET) version of Godot and confirm it works
 - [ ] Embedded Godot editor: stream the editor's 3D and 2D viewports into Rider, paired with a running Godot editor
 - [ ] Editor viewport layouts: 1, 2, 3 or 4 viewports
 - [ ] Live scene hierarchy in Rider, with selection synced to the editor
@@ -68,8 +90,9 @@
 1. Open your Godot project folder (the one with `project.godot`) in the IDE.
 2. Right-click any `.tscn` file → **Run '<scene>'**.
 3. The **Play Preview** tool window opens with the running scene. Point at it and play.
-   **Stop**, the Run window's stop button or closing the tab ends the game. Console output appears in the
-   normal Run window.
+   **Stop**, the Run window's stop button or closing the tab ends the game. Once the game has ended,
+   **Stop** turns into **Play**, which starts the scene again in the same tab. Console output appears in
+   the normal Run window.
 
 To change the defaults for every scene, such as a launcher script or the rendering driver, edit the
 template once: *Run → Edit Configurations → Edit configuration templates → Godot Scene*.
@@ -90,6 +113,17 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 | Windowless embedded mode | macOS, on by default. No Godot window, and mouse capture never touches your cursor |
 | Godot editor debug port | Where the Godot editor's debug server listens, default 6007. 0 disables the relay |
 | Synchronous GPU readback | Slower fallback for renderers without asynchronous readback |
+
+## Preview toolbar
+
+| Control | What it does |
+|---|---|
+| Stop / Play | Stops the game. Once it has ended, Play runs the same configuration again in the same tab |
+| Screenshot | Renders one frame at 1×, 2× or 4× the view's resolution, saves it as a PNG in `~/Pictures/Godot Embed Play` and copies it to the clipboard. With the `viewport` stretch mode the game renders at its base size, so 2× and 4× are pixel-exact upscales |
+| Mute | Mutes the game's master audio bus. Remembered per project |
+| Speed | Sets `Engine.time_scale`: 0.1× to 4×. Resets to 1× for every run |
+| Screen shape | *Fit panel* uses the whole panel. The presets render the largest rectangle of that shape that fits the panel, with bars around it. Remembered per project |
+| Sideways | Shown for the mobile presets: turns the phone screen to landscape |
 
 ## Input
 
@@ -155,6 +189,9 @@ echo 'gel.localIde=/Applications/Rider.app' > local.properties
 # -> build/distributions/godot-embed-play-<version>.zip
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Feedback
 

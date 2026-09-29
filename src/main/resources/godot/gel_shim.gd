@@ -22,10 +22,14 @@ extends SceneTree
 ##   0x06 FOCUS        u8 focused
 ##   0x07 ACK          (one frame consumed)
 ##   0x08 QUIT
+##   0x09 SCREENSHOT   u8 factor (render one frame at factor x the current size)
+##   0x0A MUTE         u8 muted (master bus)
+##   0x0B TIME_SCALE   f32 Engine.time_scale
 ## Godot -> IDE:
 ##   0x81 FRAME        i32 w, i32 h, u8 format(0 = RGBA8), f32 game_fps, i32 len, bytes
 ##   0x82 HELLO        u16 len, utf8 text
 ##   0x83 MOUSE_MODE   u8 Input.MouseMode (sent on change; the IDE emulates capture/hide/confine)
+##   0x84 SCREENSHOT   i32 w, i32 h, i32 len, RGBA8 bytes
 ## mods bits: 1 shift, 2 ctrl, 4 alt, 8 meta.  button: 1 left, 2 right, 3 middle (Godot numbering).
 
 const MSG_RESIZE := 0x01
@@ -36,11 +40,16 @@ const MSG_KEY := 0x05
 const MSG_FOCUS := 0x06
 const MSG_ACK := 0x07
 const MSG_QUIT := 0x08
+const MSG_SCREENSHOT := 0x09
+const MSG_MUTE := 0x0A
+const MSG_TIME_SCALE := 0x0B
 const MSG_FRAME := 0x81
 const MSG_HELLO := 0x82
 const MSG_MOUSE_MODE := 0x83
+const MSG_SCREENSHOT_DATA := 0x84
 
 const MAX_IN_FLIGHT := 2
+const MAX_SHOT_EDGE := 8192
 
 var _port := 0
 var _scene_path := ""
@@ -75,6 +84,9 @@ var _stretch_mode := "disabled"
 var _stretch_aspect := "keep"
 var _base_size := Vector2i(1152, 648)
 var _stretch_scale := 1.0
+# Screenshot in progress: the viewport renders at _shot_factor x its size and streaming pauses.
+var _shot_factor := 1
+var _shot_busy := false
 
 
 func _initialize() -> void:
@@ -176,11 +188,12 @@ func _read_stretch_settings() -> void:
 func _apply_size() -> void:
 	if _svp == null:
 		return
-	var target := Vector2i(_width, _height)
+	var target := Vector2i(_width, _height) * _shot_factor
 	if _stretch_mode == "disabled" or _base_size.x <= 0 or _base_size.y <= 0:
 		_svp.size = target
-		_svp.size_2d_override = Vector2i.ZERO
-		_svp.size_2d_override_stretch = false
+		# A screenshot renders larger: scale 2D up with it instead of showing more of the world.
+		_svp.size_2d_override = Vector2i(_width, _height) if _shot_factor > 1 else Vector2i.ZERO
+		_svp.size_2d_override_stretch = _shot_factor > 1
 		return
 	if _stretch_aspect == "keep":
 		# Letterbox: render only the base-aspect rect; the IDE centers it with bars.
@@ -296,7 +309,7 @@ func _sync_mouse_mode() -> void:
 
 
 func _maybe_capture() -> void:
-	if _svp == null:
+	if _svp == null or _shot_busy:
 		return
 	var now := Time.get_ticks_usec()
 	# Watchdog: a readback that never called back (texture freed, device lost) must not stall the stream.
@@ -378,6 +391,53 @@ func _send_frame(w: int, h: int, data: PackedByteArray) -> void:
 	_peer.put_data(data)
 
 
+## Renders one frame at [param factor] x the current size and sends it as SCREENSHOT.
+## In "viewport" stretch mode the scene renders at its base size regardless, so the image is
+## upscaled with nearest-neighbour filtering instead, which suits pixel art.
+func _screenshot(factor: int) -> void:
+	if _shot_busy or _svp == null:
+		return
+	factor = clampi(factor, 1, maxi(1, MAX_SHOT_EDGE / maxi(_width, _height)))
+	_shot_busy = true
+	_shot_factor = factor
+	_apply_size()
+	_gen += 1
+	_in_flight = 0
+	# Let a frame render at the new size before reading it back.
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	var img: Image = null
+	var tex := _svp.get_texture()
+	if tex != null:
+		img = tex.get_image()
+	_shot_factor = 1
+	_apply_size()
+	_gen += 1
+	_in_flight = 0
+	_shot_busy = false
+	if img == null:
+		return
+	if img.get_format() != Image.FORMAT_RGBA8:
+		img.convert(Image.FORMAT_RGBA8)
+	if _stretch_mode == "viewport" and factor > 1:
+		img.resize(img.get_width() * factor, img.get_height() * factor, Image.INTERPOLATE_NEAREST)
+	_send_screenshot(img)
+
+
+func _send_screenshot(img: Image) -> void:
+	if _peer == null or _peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+		return
+	var data := img.get_data()
+	var hdr := StreamPeerBuffer.new()
+	hdr.big_endian = false
+	hdr.put_u8(MSG_SCREENSHOT_DATA)
+	hdr.put_32(img.get_width())
+	hdr.put_32(img.get_height())
+	hdr.put_32(data.size())
+	_peer.put_data(hdr.data_array)
+	_peer.put_data(data)
+
+
 # ---------------------------------------------------------------- incoming
 
 func _read_messages() -> void:
@@ -429,6 +489,12 @@ func _read_messages() -> void:
 				print("[gel] quit requested by IDE")
 				quit()
 				return
+			MSG_SCREENSHOT:
+				_screenshot(_peer.get_u8())
+			MSG_MUTE:
+				AudioServer.set_bus_mute(0, _peer.get_u8() != 0)
+			MSG_TIME_SCALE:
+				Engine.time_scale = clampf(_peer.get_float(), 0.0, 16.0)
 			_:
 				push_error("[gel] unknown message type %d, closing" % t)
 				_peer.disconnect_from_host()

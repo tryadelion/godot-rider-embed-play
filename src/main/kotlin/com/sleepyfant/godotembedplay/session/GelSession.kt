@@ -41,6 +41,8 @@ class GelSession(val title: String) : Disposable {
         fun onDebuggerAttached(relayed: Boolean) {}
         fun onDebugPaused(reason: String) {}
         fun onDebugResumed() {}
+        /** Answer to [requestScreenshot]; a fresh image, not part of the frame ring. */
+        fun onScreenshot(image: BufferedImage) {}
     }
 
     private val server = ServerSocket(0, 1, InetAddress.getLoopbackAddress())
@@ -141,6 +143,17 @@ class GelSession(val title: String) : Disposable {
                     listener?.onConnected(String(bytes, Charsets.UTF_8))
                 }
                 MSG_MOUSE_MODE -> listener?.onMouseMode(input.readUnsignedByte())
+                MSG_SCREENSHOT_DATA -> {
+                    val w = input.readIntLE()
+                    val h = input.readIntLE()
+                    val len = input.readIntLE()
+                    require(w in 1..MAX_SHOT_EDGE && h in 1..MAX_SHOT_EDGE && len == w * h * 4) {
+                        "bad screenshot header w=$w h=$h len=$len"
+                    }
+                    val bytes = ByteArray(len)
+                    input.readFully(bytes)
+                    listener?.onScreenshot(fill(BufferedImage(w, h, BufferedImage.TYPE_INT_RGB), bytes))
+                }
                 else -> throw IOException("unknown message type 0x${type.toString(16)}")
             }
         }
@@ -154,9 +167,14 @@ class GelSession(val title: String) : Disposable {
             images[imageIndex] = img
         }
         imageIndex = (imageIndex + 1) % images.size
+        return fill(img, rgba)
+    }
+
+    /** Copies RGBA8 bytes into a TYPE_INT_RGB image of the same size, dropping alpha. */
+    private fun fill(img: BufferedImage, rgba: ByteArray): BufferedImage {
         val px = (img.raster.dataBuffer as DataBufferInt).data
         var si = 0
-        for (i in 0 until w * h) {
+        for (i in 0 until img.width * img.height) {
             px[i] = ((rgba[si].toInt() and 0xFF) shl 16) or
                 ((rgba[si + 1].toInt() and 0xFF) shl 8) or
                 (rgba[si + 2].toInt() and 0xFF)
@@ -233,6 +251,13 @@ class GelSession(val title: String) : Disposable {
 
     fun sendFocus(focused: Boolean) = send(msg(2) { put(MSG_FOCUS.toByte()); put(if (focused) 1 else 0) })
 
+    /** Ask for one frame rendered at [factor] × the current size; answered through [Listener.onScreenshot]. */
+    fun requestScreenshot(factor: Int) = send(msg(2) { put(MSG_SCREENSHOT.toByte()); put(factor.toByte()) })
+
+    fun sendMute(muted: Boolean) = send(msg(2) { put(MSG_MUTE.toByte()); put(if (muted) 1 else 0) })
+
+    fun sendTimeScale(scale: Float) = send(msg(5) { put(MSG_TIME_SCALE.toByte()); putFloat(scale) })
+
     private fun sendAck() = send(ACK)
 
     fun sendQuit() = send(QUIT)
@@ -271,9 +296,15 @@ class GelSession(val title: String) : Disposable {
         const val MSG_FOCUS = 0x06
         const val MSG_ACK = 0x07
         const val MSG_QUIT = 0x08
+        const val MSG_SCREENSHOT = 0x09
+        const val MSG_MUTE = 0x0A
+        const val MSG_TIME_SCALE = 0x0B
         const val MSG_FRAME = 0x81
         const val MSG_HELLO = 0x82
         const val MSG_MOUSE_MODE = 0x83
+        const val MSG_SCREENSHOT_DATA = 0x84
+        /** Mirrors MAX_SHOT_EDGE in the shim. */
+        const val MAX_SHOT_EDGE = 8192
         private val ACK = byteArrayOf(MSG_ACK.toByte())
         private val QUIT = byteArrayOf(MSG_QUIT.toByte())
         private val POISON = ByteArray(0)
