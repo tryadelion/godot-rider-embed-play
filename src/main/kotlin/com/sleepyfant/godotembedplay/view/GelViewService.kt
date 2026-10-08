@@ -1,5 +1,8 @@
 package com.sleepyfant.godotembedplay.view
 
+import com.intellij.execution.ProgramRunnerUtil
+import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.openapi.Disposable
@@ -29,7 +32,12 @@ class GelViewService(private val project: Project) {
             it.getUserData(PROFILE) == profile && (it.component as? GelViewPanel)?.isStopped == true
         }
 
-        val panel = GelViewPanel(project, session, hiDpi) { ExecutionUtil.restart(environment) }
+        val debugging = environment.executor.id == DefaultDebugExecutor.EXECUTOR_ID
+        val panel = GelViewPanel(project, session, hiDpi, debugging) { debug ->
+            val executor = if (debug) DefaultDebugExecutor.getDebugExecutorInstance() else DefaultRunExecutor.getRunExecutorInstance()
+            if (executor.id == environment.executor.id) ExecutionUtil.restart(environment)
+            else environment.runnerAndConfigurationSettings?.let { ProgramRunnerUtil.executeConfiguration(it, executor) }
+        }
         val content = ContentFactory.getInstance().createContent(panel, session.title, false)
         content.isCloseable = true
         content.putUserData(PROFILE, profile)

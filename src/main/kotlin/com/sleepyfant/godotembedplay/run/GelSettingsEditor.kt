@@ -40,7 +40,7 @@ class GelSettingsEditor(private val project: Project) : SettingsEditor<GelRunCon
     override fun createEditor(): JComponent = panel {
         row("Scene:") {
             cell(scene).align(AlignX.FILL)
-                .comment("res://path.tscn, or a path relative to the project directory")
+                .comment("res://path.tscn, or a path relative to the project directory; empty = the project's main scene")
         }
         row("Project directory:") {
             cell(projectDir).align(AlignX.FILL).comment("Folder with project.godot; empty = IDE project root")

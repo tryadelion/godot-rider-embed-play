@@ -28,8 +28,9 @@
 ## Features
 
 - **Run any scene from the IDE.** A *Godot Scene* run configuration, or right-click a `.tscn` → **Run**.
-  Your own launcher scripts work too.
-- **Play again.** When the game ends, **Stop** turns into **Play** and restarts the scene in the same tab.
+  Leave the scene empty to run the project's main scene. Your own launcher scripts work too.
+- **Play again.** When the game ends, **Stop** turns into **Play** and restarts the scene in the same tab,
+  with **Debug** next to it to restart with the debugger attached.
 - **Screen shapes.** Preview at 21:9, 16:10, 16:9, 4:3 or a phone screen (portrait or sideways), fitted to
   the panel's width and height, or let the game fill the whole panel.
 - **Screenshots, mute and game speed** right in the preview's toolbar. Screenshots can render at 2× or 4×
@@ -42,13 +43,15 @@
   has them back. Drag gestures continue outside the panel, and the cursor returns to where you pressed.
 - **Windowless on macOS.** No stray Godot window, no Dock icon, and a game that captures the mouse can't
   take over your cursor.
-- ⚠️ **Breakpoints through the Godot editor (experimental).** With the editor's debug server open, breakpoints and stepping
-  work through Rider's GDScript debugger, and the view shows a pause overlay while the game is stopped.
+- ⚠️ **Breakpoints through the Godot editor (experimental).** **Debug** a scene with the editor's debug server open,
+  and breakpoints and stepping work through Rider's GDScript debugger. While the game is stopped the view shows
+  a pause overlay with the error, if any, and a link to the line.
 
 ## Planned features
 
 - ✅ Run any Godot 4 scene inside an IDE tool window, from a run configuration or a right-click on a `.tscn`
-- ✅ Play again: Stop turns into Play once the game ends, restarting the scene in the same tab
+- ✅ Play again: Stop turns into Play once the game ends, restarting the scene in the same tab, with Debug next to it
+- ✅ Run the project's main scene when no scene is set
 - ✅ Screen shape presets: 21:9, 16:10, 16:9, 4:3, Standard Mobile (19.5:9) and Narrow Mobile (20:9), phones portrait or sideways
 - ✅ Screenshots at 1×, 2× or 4× the view's resolution, saved as PNG and copied to the clipboard
 - ✅ Mute / unmute and game speed (time scale) from the preview
@@ -56,7 +59,8 @@
 - ✅ Viewport follows the panel size and the project's stretch settings, sharp on HiDPI
 - ✅ Hover-based mouse and keyboard input, with drag gestures that continue outside the panel
 - ✅ Windowless mode on macOS: no Godot window, no cursor capture
-- ✅ ⚠️ Experimental: pause overlay while stopped at a breakpoint, with stepping through Rider and the Godot editor (macOS)
+- ✅ ⚠️ Experimental: Debug a scene in the preview with Rider's GDScript debugger attached, breakpoints and stepping through the Godot editor (macOS)
+- ✅ ⚠️ Experimental: pause overlay showing the error and a link to the line that stopped the game
 - [ ] Windows support (tested)
 - [ ] Linux support (tested)
 - [ ] Pause and frame step without the debugger, with its own controls in the preview
@@ -97,10 +101,12 @@
 ## Quick start
 
 1. Open your Godot project folder (the one with `project.godot`) in the IDE.
-2. Right-click any `.tscn` file → **Run '<scene>'**.
+2. Right-click any `.tscn` file → **Run '<scene>'**, or **Debug** for breakpoints (see
+   *Debugging with breakpoints* below).
 3. The **Play Preview** tool window opens with the running scene. Point at it and play.
    **Stop**, the Run window's stop button or closing the tab ends the game. Once the game has ended,
-   **Stop** turns into **Play**, which starts the scene again in the same tab. Console output appears in
+   **Stop** turns into **Play**, which starts the scene again in the same tab, and **Debug** appears next
+   to it. Console output appears in
    the normal Run window.
 
 To change the defaults for every scene, such as a launcher script or the rendering driver, edit the
@@ -110,7 +116,7 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 
 | Option | What it does |
 |---|---|
-| Scene | `res://path/to/scene.tscn`, or a path relative to the project directory |
+| Scene | `res://path/to/scene.tscn`, or a path relative to the project directory. Empty runs the project's main scene |
 | Project directory | Folder containing `project.godot`. Empty means the IDE project root |
 | Godot executable | `godot` on your `PATH`, or a full path |
 | Rendering driver | Passed as `--rendering-driver`, for example `vulkan` or `metal` |
@@ -128,6 +134,7 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 | Control | What it does |
 |---|---|
 | Stop / Play | Stops the game. Once it has ended, Play runs the same configuration again in the same tab |
+| Debug | Shown once the game has ended: runs the same configuration again with the debugger attached |
 | Screenshot | Renders one frame at 1×, 2× or 4× the view's resolution, saves it as a PNG in `~/Pictures/Godot Embed Play` and copies it to the clipboard. With the `viewport` stretch mode the game renders at its base size, so 2× and 4× are pixel-exact upscales |
 | Mute | Mutes the game's master audio bus. Remembered per project |
 | Speed | Sets `Engine.time_scale`: 0.1× to 4×. Resets to 1× for every run |
@@ -150,13 +157,20 @@ This works, but hasn't been tested much yet. Reports are very welcome.
 
 1. Keep the Godot editor open with your project, as Rider's GDScript debugging already requires.
 2. In the Godot editor, turn on **Debug → Keep Debug Server Open**.
-3. Run the scene with Godot Embed Play. The view's status bar reads *breakpoints: Godot editor / Rider*.
+3. **Debug** the scene with Godot Embed Play (the Debug button, right-click a `.tscn` → Debug, or the preview's
+   Debug button after a game ends). It runs in the
+   preview as usual and also starts Rider's *Debug GDScript (Running session)*, which attaches Rider's GDScript
+   debugger to the Godot editor. The view's status bar reads *breakpoints: Godot editor / Rider*.
 
-When a breakpoint hits, the view blurs the last frame and shows a pause overlay. Continue or step from
-Rider's debugger as usual, and the overlay clears when the game resumes.
+When a breakpoint or script error hits, the view blurs the last frame and shows a pause overlay. Errors are
+shown like an exception, cut to two lines, and a link below opens the script at the line that stopped the
+game. Continue or step from
+Rider's debugger as usual, and the overlay clears when the game resumes. Stopping the game also ends the
+attached debugger session.
 
 Without a reachable Godot editor, the game runs with breakpoints skipped, so it can never freeze with
-nothing to resume it. Errors still print to the Run console.
+nothing to resume it. Errors still print to the Run console. When you started it with Debug, a warning
+says so.
 
 Rider only follows the Godot editor's *first* debugger session. Don't run an editor-launched game at the
 same time.

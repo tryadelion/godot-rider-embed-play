@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.sleepyfant"
-version = "0.1.2"
+version = "0.1.3"
 
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
@@ -56,6 +56,17 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.1.3</h3>
+            <ul>
+              <li>Debug a Godot Scene configuration to run it in the preview with Rider's GDScript debugger attached,
+                so breakpoints work without starting the debugger by hand. Debug on a .tscn now uses the preview too.</li>
+              <li>After a game ends, the preview's toolbar has Debug next to Play, to start the scene again with the
+                debugger attached.</li>
+              <li>The pause overlay shows script errors styled like an exception, cut to two lines, with a link to the
+                line that stopped the game.</li>
+              <li>Leave Scene empty to run the project's main scene, like Rider's Player configuration but in the preview.</li>
+              <li>Replace a platform API scheduled for removal, so newer IDE builds no longer flag the plugin.</li>
+            </ul>
             <h3>0.1.2</h3>
             <ul>
               <li>Play again: once a game ends, whether by Stop, the Run window or the game quitting on its own,

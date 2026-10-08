@@ -2,6 +2,8 @@ package com.sleepyfant.godotembedplay.view
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -9,15 +11,18 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.DumbAwareToggleAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.JBColor
-import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.scale.JBUIScale
+import com.intellij.util.IconUtil
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.sleepyfant.godotembedplay.session.GelSession
@@ -27,11 +32,14 @@ import java.awt.Component
 import java.awt.Cursor
 import java.awt.Desktop
 import java.awt.FlowLayout
+import java.awt.Font
+import java.awt.FontMetrics
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.KeyboardFocusManager
 import java.awt.MouseInfo
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -65,7 +73,7 @@ import kotlin.math.abs
  * touch the real cursor either); only its cursor shape is mirrored.
  *
  * Once the game ends (Stop, the Run window, or the game quitting on its own) the Stop button turns into
- * Play, which runs the same configuration again via [replay].
+ * Play, which runs the same configuration again via [replay], with a Debug button next to it.
  *
  * The toolbar also takes screenshots (optionally above the view's resolution), mutes the game, sets its
  * time scale and picks the screen shape ([ViewAspect]). Shape, orientation and mute are remembered per project.
@@ -74,7 +82,10 @@ class GelViewPanel(
     private val project: Project,
     private val session: GelSession,
     private val hiDpi: Boolean,
-    private val replay: () -> Unit,
+    /** Started with Debug: losing breakpoints is worth a warning, not just the status label. */
+    private val debugging: Boolean,
+    /** Runs this configuration again; `true` = with the Debug executor. */
+    private val replay: (debug: Boolean) -> Unit,
 ) : JPanel(BorderLayout()), GelSession.Listener {
 
     private val canvas = Canvas()
@@ -84,11 +95,11 @@ class GelViewPanel(
     private var aspect = ViewAspect.entries.firstOrNull { it.name == settings.getValue(KEY_ASPECT) } ?: ViewAspect.FIT
     private var sideways = settings.getBoolean(KEY_SIDEWAYS)
     private var muted = settings.getBoolean(KEY_MUTED)
-    private val toolbar = createToolbar(StopPlayAction(), ScreenshotGroup(), MuteAction())
+    private val toolbar = createToolbar(StopPlayAction(), DebugAgainAction(), ScreenshotGroup(), MuteAction())
     private val rotateToolbar = createToolbar(RotateAction())
     private val speedBox = ComboBox(SPEEDS).apply {
         selectedItem = 1f
-        renderer = SimpleListCellRenderer.create("") { formatSpeed(it) }
+        renderer = textListCellRenderer { it?.let(::formatSpeed) }
         toolTipText = "Game speed (Engine.time_scale)"
         addActionListener { session.sendTimeScale(selectedItem as Float) }
     }
@@ -130,7 +141,12 @@ class GelViewPanel(
 
     // ---- debugger pause (EDT only)
     private var paused = false
-    private var pauseReason = ""
+    /** Script error that paused the game; null for a breakpoint or step. */
+    private var pauseError: String? = null
+    /** Top stack frame while paused: res:// file, 1-based line, function. Arrives shortly after the pause. */
+    private var pauseLocation: Triple<String, Int, String>? = null
+    /** Where the location link was last painted (canvas coordinates), for clicks and the hand cursor. */
+    private var linkBounds: Rectangle? = null
     private var blurred: BufferedImage? = null
     private val debugLabel = JBLabel("").apply { foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY) }
 
@@ -242,13 +258,22 @@ class GelViewPanel(
     private fun showDebugger(relayed: Boolean) {
         if (stopped) return
         debugLabel.text = if (relayed) "· breakpoints: Godot editor / Rider" else "· breakpoints off (no Godot editor debug server)"
+        if (!relayed && debugging) {
+            NotificationGroupManager.getInstance().getNotificationGroup("Godot Embed Play").createNotification(
+                "Breakpoints are off",
+                "The Godot editor's debug server isn't reachable. Open the project in the Godot editor, " +
+                    "turn on Debug → Keep Debug Server Open, then debug again.",
+                NotificationType.WARNING,
+            ).notify(project)
+        }
     }
 
-    override fun onDebugPaused(reason: String) {
+    override fun onDebugPaused(error: String?) {
         ApplicationManager.getApplication().invokeLater {
             if (stopped) return@invokeLater
             paused = true
-            pauseReason = reason
+            pauseError = error
+            pauseLocation = null
             blurred = image?.let(::blur)
             // The game is frozen; release whatever it thinks is held so nothing sticks after resuming.
             for (vk in pressedKeys.toList()) session.sendKey(vk, 0, false, false, 0, 0)
@@ -257,12 +282,30 @@ class GelViewPanel(
         }
     }
 
+    override fun onDebugLocation(file: String, line: Int, function: String) {
+        ApplicationManager.getApplication().invokeLater {
+            if (!paused) return@invokeLater
+            pauseLocation = Triple(file, line, function)
+            canvas.repaint()
+        }
+    }
+
     override fun onDebugResumed() {
         ApplicationManager.getApplication().invokeLater {
             paused = false
             blurred = null
+            pauseLocation = null
+            linkBounds = null
+            canvas.cursor = Cursor.getDefaultCursor()
             canvas.repaint()
         }
+    }
+
+    private fun openPauseLocation() {
+        val (file, line, _) = pauseLocation ?: return
+        val vf = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(session.projectDir.resolve(file.removePrefix("res://")))
+            ?: return
+        OpenFileDescriptor(project, vf, line - 1, 0).navigate(true)
     }
 
     /** Cheap strong blur: shrink twice with bilinear filtering; drawing it back up blurs again. */
@@ -336,6 +379,7 @@ class GelViewPanel(
                 }
                 override fun mouseDragged(e: MouseEvent) = motion(e)
                 override fun mousePressed(e: MouseEvent) {
+                    if (paused && linkBounds?.contains(e.point) == true) return openPauseLocation()
                     takeFocus()
                     button(e, true)
                 }
@@ -435,19 +479,63 @@ class GelViewPanel(
             val arc = JBUI.scale(4)
             g2.fillRoundRect(cx - gap / 2 - barW, top, barW, barH, arc, arc)
             g2.fillRoundRect(cx + gap / 2, top, barW, barH, arc, arc)
-            g2.font = JBUI.Fonts.label().deriveFont(java.awt.Font.BOLD, JBUI.scaleFontSize(15f).toFloat())
+            g2.font = JBUI.Fonts.label().deriveFont(Font.BOLD, JBUI.scaleFontSize(15f).toFloat())
             var fm = g2.fontMetrics
             val title = "Paused in debugger"
-            var ty = cy + r - JBUI.scale(18) + JBUI.scale(26)
-            g2.drawString(title, cx - fm.stringWidth(title) / 2, ty)
+            val titleBaseline = cy + r - JBUI.scale(18) + JBUI.scale(26)
+            g2.drawString(title, cx - fm.stringWidth(title) / 2, titleBaseline)
+            // y: top edge of the next block
+            var y = titleBaseline + fm.descent + JBUI.scale(8)
+            val maxW = minOf(w.toInt() - JBUI.scale(48), JBUI.scale(560))
+            val mono = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scaleFontSize(12f))
+
+            val error = pauseError
+            if (error != null) {
+                // Styled like an exception: dark red card, red accent bar, red monospace text, two lines at most.
+                g2.font = mono
+                fm = g2.fontMetrics
+                val pad = JBUI.scale(10)
+                val lines = clamp(error, fm, maxW - 2 * pad, 2)
+                val cardW = lines.maxOf { fm.stringWidth(it) } + 2 * pad
+                val cardH = lines.size * fm.height + 2 * pad
+                val left = cx - cardW / 2
+                g2.color = ERROR_BACKGROUND
+                g2.fillRoundRect(left, y, cardW, cardH, 2 * arc, 2 * arc)
+                g2.color = ERROR_FOREGROUND
+                g2.fillRect(left, y + arc, JBUI.scale(3), cardH - 2 * arc)
+                lines.forEachIndexed { i, line -> g2.drawString(line, left + pad, y + pad + fm.ascent + i * fm.height) }
+                y += cardH
+            } else {
+                g2.font = JBUI.Fonts.label()
+                fm = g2.fontMetrics
+                g2.color = Color(255, 255, 255, 190)
+                g2.drawString("Breakpoint", cx - fm.stringWidth("Breakpoint") / 2, y + fm.ascent)
+                y += fm.height
+            }
+
+            val location = pauseLocation
+            linkBounds = null
+            if (location != null) {
+                val (file, line, function) = location
+                g2.font = mono
+                fm = g2.fontMetrics
+                val where = "${file.removePrefix("res://")}:$line"
+                val text = ellipsize(if (function.isEmpty()) where else "at $function ($where)", fm, maxW)
+                val tw = fm.stringWidth(text)
+                y += JBUI.scale(6)
+                val baseline = y + fm.ascent
+                g2.color = LINK
+                g2.drawString(text, cx - tw / 2, baseline)
+                g2.drawLine(cx - tw / 2, baseline + JBUI.scale(2), cx + tw / 2, baseline + JBUI.scale(2))
+                linkBounds = Rectangle(cx - tw / 2, y, tw, fm.height)
+                y += fm.height
+            }
+
             g2.font = JBUI.Fonts.label()
             fm = g2.fontMetrics
-            g2.color = Color(255, 255, 255, 190)
-            for (line in listOf(pauseReason.take(120), "Continue or step from Rider's debugger")) {
-                if (line.isBlank()) continue
-                ty += fm.height + JBUI.scale(2)
-                g2.drawString(line, cx - fm.stringWidth(line) / 2, ty)
-            }
+            g2.color = Color(255, 255, 255, 150)
+            val hint = "Continue or step from Rider's debugger"
+            g2.drawString(hint, cx - fm.stringWidth(hint) / 2, y + JBUI.scale(10) + fm.ascent)
         }
     }
 
@@ -486,6 +574,10 @@ class GelViewPanel(
     private fun mapY(py: Int): Float = ((py - drawY) * imgH / drawH).toFloat()
 
     private fun motion(e: MouseEvent) {
+        if (paused && !stopped) {
+            val overLink = linkBounds?.contains(e.point) == true
+            canvas.cursor = Cursor.getPredefinedCursor(if (overLink) Cursor.HAND_CURSOR else Cursor.DEFAULT_CURSOR)
+        }
         if (stopped || paused || !canvas.isFocusOwner) return
         // During a gesture positions may lie outside the viewport; Godot gets them as-is, plus relative motion.
         val x = mapX(e.x)
@@ -557,7 +649,15 @@ class GelViewPanel(
             e.presentation.description = if (stopped) "Run this scene again" else "Stop the game"
             e.presentation.icon = if (stopped) AllIcons.Actions.Execute else AllIcons.Actions.Suspend
         }
-        override fun actionPerformed(e: AnActionEvent) = if (stopped) replay() else session.close()
+        override fun actionPerformed(e: AnActionEvent) = if (stopped) replay(false) else session.close()
+    }
+
+    private inner class DebugAgainAction : DumbAwareAction("Debug", "Debug this scene again", DEBUG_ICON) {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun update(e: AnActionEvent) {
+            e.presentation.isVisible = stopped
+        }
+        override fun actionPerformed(e: AnActionEvent) = replay(true)
     }
 
     private inner class ScreenshotGroup : DefaultActionGroup("Screenshot", true) {
@@ -617,6 +717,31 @@ class GelViewPanel(
         private const val KEY_MUTED = "godotEmbedPlay.muted"
         private val SPEEDS = arrayOf(0.1f, 0.25f, 0.5f, 1f, 2f, 4f)
         private val SHOT_FACTORS = listOf(1, 2, 4)
+        // Pause overlay; always drawn over a darkened frame, so fixed colors (IDE console error red, link blue).
+        private val ERROR_FOREGROUND = Color(0xFF6B68)
+        private val ERROR_BACKGROUND = Color(80, 24, 24, 215)
+        private val LINK = Color(0x589DF6)
+        /** IntelliJ's debug bug in Godot blue, so it doesn't read as a second green Play. */
+        private val DEBUG_ICON = IconUtil.colorize(AllIcons.Actions.StartDebugger, Color(0x478CBF))
+
+        /** Word-wraps [text] into at most [maxLines] lines of [maxW] px; whatever doesn't fit ends in an ellipsis. */
+        internal fun clamp(text: String, fm: FontMetrics, maxW: Int, maxLines: Int): List<String> {
+            val lines = mutableListOf<String>()
+            for (word in text.trim().split(Regex("\\s+"))) {
+                val last = lines.lastOrNull()
+                if (last != null && fm.stringWidth("$last $word") <= maxW) lines[lines.lastIndex] = "$last $word" else lines += word
+            }
+            val kept = lines.take(maxLines).toMutableList()
+            if (lines.size > maxLines) kept[maxLines - 1] = lines.drop(maxLines - 1).joinToString(" ")
+            return kept.map { ellipsize(it, fm, maxW) }
+        }
+
+        internal fun ellipsize(s: String, fm: FontMetrics, maxW: Int): String {
+            if (fm.stringWidth(s) <= maxW) return s
+            var end = s.length
+            while (end > 0 && fm.stringWidth(s.take(end).trimEnd() + "…") > maxW) end--
+            return s.take(end).trimEnd() + "…"
+        }
 
         private fun formatSpeed(speed: Float): String =
             (if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()) + "×"

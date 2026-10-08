@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.3 — 2026-10-08
+
+- **Debug** a Godot Scene configuration to run it in the preview with Rider's GDScript debugger attached, so
+  breakpoints work without starting the debugger by hand. Debug on a `.tscn` now uses the preview too.
+- After a game ends, the preview's toolbar has **Debug** next to **Play**, to start the scene again with the
+  debugger attached. Play always runs without it.
+- The pause overlay shows script errors styled like an exception, cut to two lines, with a link to the line
+  that stopped the game (breakpoints get the link too).
+- Leave **Scene** empty to run the project's main scene, like Rider's *Player* configuration but in the preview.
+- Replace a platform API scheduled for removal (game speed list renderer), so newer IDE builds no longer
+  flag the plugin.
+
 ## 0.1.2 — 2026-09-29
 
 - **Play again.** Once a game ends, whether by Stop, the Run window or the game quitting on its own,
