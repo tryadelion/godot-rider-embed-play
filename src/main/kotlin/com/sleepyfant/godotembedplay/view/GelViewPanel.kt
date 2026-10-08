@@ -22,6 +22,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.scale.JBUIScale
+import com.intellij.util.IconUtil
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.sleepyfant.godotembedplay.session.GelSession
@@ -72,7 +73,7 @@ import kotlin.math.abs
  * touch the real cursor either); only its cursor shape is mirrored.
  *
  * Once the game ends (Stop, the Run window, or the game quitting on its own) the Stop button turns into
- * Play, which runs the same configuration again via [replay].
+ * Play, which runs the same configuration again via [replay], with a Debug button next to it.
  *
  * The toolbar also takes screenshots (optionally above the view's resolution), mutes the game, sets its
  * time scale and picks the screen shape ([ViewAspect]). Shape, orientation and mute are remembered per project.
@@ -83,7 +84,8 @@ class GelViewPanel(
     private val hiDpi: Boolean,
     /** Started with Debug: losing breakpoints is worth a warning, not just the status label. */
     private val debugging: Boolean,
-    private val replay: () -> Unit,
+    /** Runs this configuration again; `true` = with the Debug executor. */
+    private val replay: (debug: Boolean) -> Unit,
 ) : JPanel(BorderLayout()), GelSession.Listener {
 
     private val canvas = Canvas()
@@ -93,7 +95,7 @@ class GelViewPanel(
     private var aspect = ViewAspect.entries.firstOrNull { it.name == settings.getValue(KEY_ASPECT) } ?: ViewAspect.FIT
     private var sideways = settings.getBoolean(KEY_SIDEWAYS)
     private var muted = settings.getBoolean(KEY_MUTED)
-    private val toolbar = createToolbar(StopPlayAction(), ScreenshotGroup(), MuteAction())
+    private val toolbar = createToolbar(StopPlayAction(), DebugAgainAction(), ScreenshotGroup(), MuteAction())
     private val rotateToolbar = createToolbar(RotateAction())
     private val speedBox = ComboBox(SPEEDS).apply {
         selectedItem = 1f
@@ -647,7 +649,15 @@ class GelViewPanel(
             e.presentation.description = if (stopped) "Run this scene again" else "Stop the game"
             e.presentation.icon = if (stopped) AllIcons.Actions.Execute else AllIcons.Actions.Suspend
         }
-        override fun actionPerformed(e: AnActionEvent) = if (stopped) replay() else session.close()
+        override fun actionPerformed(e: AnActionEvent) = if (stopped) replay(false) else session.close()
+    }
+
+    private inner class DebugAgainAction : DumbAwareAction("Debug", "Debug this scene again", DEBUG_ICON) {
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
+        override fun update(e: AnActionEvent) {
+            e.presentation.isVisible = stopped
+        }
+        override fun actionPerformed(e: AnActionEvent) = replay(true)
     }
 
     private inner class ScreenshotGroup : DefaultActionGroup("Screenshot", true) {
@@ -711,6 +721,8 @@ class GelViewPanel(
         private val ERROR_FOREGROUND = Color(0xFF6B68)
         private val ERROR_BACKGROUND = Color(80, 24, 24, 215)
         private val LINK = Color(0x589DF6)
+        /** IntelliJ's debug bug in Godot blue, so it doesn't read as a second green Play. */
+        private val DEBUG_ICON = IconUtil.colorize(AllIcons.Actions.StartDebugger, Color(0x478CBF))
 
         /** Word-wraps [text] into at most [maxLines] lines of [maxW] px; whatever doesn't fit ends in an ellipsis. */
         internal fun clamp(text: String, fm: FontMetrics, maxW: Int, maxLines: Int): List<String> {
