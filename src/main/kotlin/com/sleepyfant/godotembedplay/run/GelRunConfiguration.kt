@@ -44,11 +44,11 @@ class GelRunConfiguration(project: Project, factory: ConfigurationFactory, name:
 
     override fun checkConfiguration() {
         val o = options
-        if (o.scenePath.isNullOrBlank()) throw RuntimeConfigurationError("Scene is not set")
         val dir = resolvedProjectDir()
         if (!Files.isRegularFile(dir.resolve("project.godot"))) {
             throw RuntimeConfigurationError("No project.godot in $dir")
         }
+        resolvedScene()
         if (!o.launcherScript.isNullOrBlank() && !Files.isRegularFile(resolveAgainstProject(o.launcherScript!!))) {
             throw RuntimeConfigurationError("Launcher script not found: ${o.launcherScript}")
         }
@@ -67,9 +67,12 @@ class GelRunConfiguration(project: Project, factory: ConfigurationFactory, name:
         return (if (p.isAbsolute) p else resolvedProjectDir().resolve(p)).normalize()
     }
 
-    /** Scene as a `res://` path, whatever form the user typed (res://, relative, absolute). */
+    /** Scene as a `res://` path, whatever form the user typed (res://, relative, absolute); empty = the project's main scene. */
     fun resolvedScene(): String {
         val raw = options.scenePath?.trim().orEmpty()
+        if (raw.isEmpty()) {
+            return mainScene() ?: throw RuntimeConfigurationError("Scene is not set and the project has no main scene")
+        }
         if (raw.startsWith("res://")) return raw
         val p = Paths.get(expandHome(raw))
         if (p.isAbsolute) {
@@ -80,6 +83,17 @@ class GelRunConfiguration(project: Project, factory: ConfigurationFactory, name:
         return "res://" + raw.trimStart('/').replace('\\', '/')
     }
 
+    /** `run/main_scene` from project.godot, as written there (res:// or uid://). */
+    private fun mainScene(): String? {
+        val file = resolvedProjectDir().resolve("project.godot")
+        if (!Files.isRegularFile(file)) return null
+        return Files.readAllLines(file).firstNotNullOfOrNull { MAIN_SCENE.matchEntire(it.trim())?.groupValues?.get(1) }
+    }
+
     private fun expandHome(s: String): String =
         if (s.startsWith("~/")) System.getProperty("user.home") + s.substring(1) else s
+
+    private companion object {
+        val MAIN_SCENE = Regex("""run/main_scene\s*=\s*"(.+)"""")
+    }
 }

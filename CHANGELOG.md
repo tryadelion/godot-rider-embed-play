@@ -2,6 +2,7 @@
 
 ## 0.1.3 — 2026-10-08
 
+- Leave **Scene** empty to run the project's main scene, like Rider's *Player* configuration but in the preview.
 - Replace a platform API scheduled for removal (game speed list renderer), so newer IDE builds no longer
   flag the plugin.
 

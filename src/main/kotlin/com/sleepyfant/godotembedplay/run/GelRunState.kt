@@ -29,7 +29,8 @@ class GelRunState(env: ExecutionEnvironment, private val config: GelRunConfigura
             throw ExecutionException("Cannot write shim into $projectDir/.godot: ${e.message}", e)
         }
 
-        val session = GelSession(scene.substringAfterLast('/'))
+        // A uid:// main scene has no readable file name, so fall back to the configuration's name.
+        val session = GelSession(if (scene.startsWith("uid://")) config.name else scene.substringAfterLast('/'))
 
         val godotSide = mutableListOf<String>()
         if (o.embedded && SystemInfo.isMac) {

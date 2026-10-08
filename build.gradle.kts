@@ -58,6 +58,7 @@ intellijPlatform {
         changeNotes = """
             <h3>0.1.3</h3>
             <ul>
+              <li>Leave Scene empty to run the project's main scene, like Rider's Player configuration but in the preview.</li>
               <li>Replace a platform API scheduled for removal, so newer IDE builds no longer flag the plugin.</li>
             </ul>
             <h3>0.1.2</h3>

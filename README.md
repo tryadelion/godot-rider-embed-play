@@ -110,7 +110,7 @@ template once: *Run → Edit Configurations → Edit configuration templates →
 
 | Option | What it does |
 |---|---|
-| Scene | `res://path/to/scene.tscn`, or a path relative to the project directory |
+| Scene | `res://path/to/scene.tscn`, or a path relative to the project directory. Empty runs the project's main scene |
 | Project directory | Folder containing `project.godot`. Empty means the IDE project root |
 | Godot executable | `godot` on your `PATH`, or a full path |
 | Rendering driver | Passed as `--rendering-driver`, for example `vulkan` or `metal` |
