@@ -17,6 +17,7 @@ import java.net.Socket
 import java.net.SocketTimeoutException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.file.Path
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * Protocol constants mirror `godot/gel_shim.gd`.
  */
-class GelSession(val title: String) : Disposable {
+class GelSession(val title: String, val projectDir: Path) : Disposable {
 
     interface Listener {
         fun onConnected(hello: String)
@@ -39,7 +40,8 @@ class GelSession(val title: String) : Disposable {
         fun onCursorShape(shape: Int) {}
         /** Debugger link established; [relayed] = Godot editor (and Rider through it) debugs the game. */
         fun onDebuggerAttached(relayed: Boolean) {}
-        fun onDebugPaused(reason: String) {}
+        fun onDebugPaused(error: String?) {}
+        fun onDebugLocation(file: String, line: Int, function: String) {}
         fun onDebugResumed() {}
         /** Answer to [requestScreenshot]; a fresh image, not part of the frame ring. */
         fun onScreenshot(image: BufferedImage) {}
@@ -57,7 +59,10 @@ class GelSession(val title: String) : Disposable {
                 override fun onCursorShape(shape: Int) { listener?.onCursorShape(shape) }
                 override fun onMouseMode(mode: Int) { listener?.onMouseMode(mode) }
                 override fun onDebuggerAttached(relayed: Boolean) { listener?.onDebuggerAttached(relayed) }
-                override fun onDebugPaused(reason: String) { listener?.onDebugPaused(reason) }
+                override fun onDebugPaused(error: String?) { listener?.onDebugPaused(error) }
+                override fun onDebugLocation(file: String, line: Int, function: String) {
+                    listener?.onDebugLocation(file, line, function)
+                }
                 override fun onDebugResumed() { listener?.onDebugResumed() }
             }
         }

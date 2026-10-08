@@ -60,6 +60,8 @@ intellijPlatform {
             <ul>
               <li>Debug a Godot Scene configuration to run it in the preview with Rider's GDScript debugger attached,
                 so breakpoints work without starting the debugger by hand. Debug on a .tscn now uses the preview too.</li>
+              <li>The pause overlay shows script errors styled like an exception, cut to two lines, with a link to the
+                line that stopped the game.</li>
               <li>Leave Scene empty to run the project's main scene, like Rider's Player configuration but in the preview.</li>
               <li>Replace a platform API scheduled for removal, so newer IDE builds no longer flag the plugin.</li>
             </ul>

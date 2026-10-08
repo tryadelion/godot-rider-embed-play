@@ -40,7 +40,10 @@ class GodotDebugServer(private val title: String, private val editorPort: Int) {
         fun onMouseMode(mode: Int) {}
         /** [relayed]: true = Godot editor (and Rider through it) debugs this game; false = standalone. */
         fun onDebuggerAttached(relayed: Boolean) {}
-        fun onDebugPaused(reason: String) {}
+        /** [error]: script error text, or null for a breakpoint / step. */
+        fun onDebugPaused(error: String?) {}
+        /** Top frame of the paused stack, as `res://` path, 1-based line and function name. */
+        fun onDebugLocation(file: String, line: Int, function: String) {}
         fun onDebugResumed() {}
     }
 
@@ -174,8 +177,14 @@ class GodotDebugServer(private val title: String, private val editorPort: Int) {
                     paused = true
                     // data: [can_continue, error, has_stackdump, thread_id]
                     val error = data.getOrNull(1) as? String
-                    listener?.onDebugPaused(if (error.isNullOrBlank()) "Breakpoint" else error)
+                    listener?.onDebugPaused(error?.takeIf { it.isNotBlank() })
                 }
+            }
+            // Answer to the editor's get_stack_dump: [frame count * 3, file, line, function, file, line, ...].
+            "stack_dump" -> if (paused) {
+                val file = data.getOrNull(1) as? String
+                val line = (data.getOrNull(2) as? Number)?.toInt()
+                if (file != null && line != null) listener?.onDebugLocation(file, line, data.getOrNull(3) as? String ?: "")
             }
             "debug_exit" -> if (paused) {
                 paused = false

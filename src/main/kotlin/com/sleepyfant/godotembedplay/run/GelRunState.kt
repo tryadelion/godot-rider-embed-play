@@ -30,7 +30,7 @@ class GelRunState(env: ExecutionEnvironment, private val config: GelRunConfigura
         }
 
         // A uid:// main scene has no readable file name, so fall back to the configuration's name.
-        val session = GelSession(if (scene.startsWith("uid://")) config.name else scene.substringAfterLast('/'))
+        val session = GelSession(if (scene.startsWith("uid://")) config.name else scene.substringAfterLast('/'), projectDir)
 
         val godotSide = mutableListOf<String>()
         if (o.embedded && SystemInfo.isMac) {
