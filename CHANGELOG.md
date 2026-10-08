@@ -2,6 +2,8 @@
 
 ## 0.1.3 — 2026-10-08
 
+- **Debug** a Godot Scene configuration to run it in the preview with Rider's GDScript debugger attached, so
+  breakpoints work without starting the debugger by hand. Debug on a `.tscn` now uses the preview too.
 - Leave **Scene** empty to run the project's main scene, like Rider's *Player* configuration but in the preview.
 - Replace a platform API scheduled for removal (game speed list renderer), so newer IDE builds no longer
   flag the plugin.

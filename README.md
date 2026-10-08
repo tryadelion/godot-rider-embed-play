@@ -150,10 +150,13 @@ This works, but hasn't been tested much yet. Reports are very welcome.
 
 1. Keep the Godot editor open with your project, as Rider's GDScript debugging already requires.
 2. In the Godot editor, turn on **Debug → Keep Debug Server Open**.
-3. Run the scene with Godot Embed Play. The view's status bar reads *breakpoints: Godot editor / Rider*.
+3. **Debug** the scene with Godot Embed Play (the Debug button, or right-click a `.tscn` → Debug). It runs in the
+   preview as usual and also starts Rider's *Debug GDScript (Running session)*, which attaches Rider's GDScript
+   debugger to the Godot editor. The view's status bar reads *breakpoints: Godot editor / Rider*.
 
 When a breakpoint hits, the view blurs the last frame and shows a pause overlay. Continue or step from
-Rider's debugger as usual, and the overlay clears when the game resumes.
+Rider's debugger as usual, and the overlay clears when the game resumes. Stopping the game also ends the
+attached debugger session.
 
 Without a reachable Godot editor, the game runs with breakpoints skipped, so it can never freeze with
 nothing to resume it. Errors still print to the Run console.
