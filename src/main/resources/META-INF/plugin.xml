@@ -9,9 +9,9 @@
         <h3>Features</h3>
         <ul>
             <li><b>Godot Scene run configuration</b>: pick a <code>.tscn</code>, or right-click one and choose Run.
-                Works with your own launcher scripts.</li>
+                Leave the scene empty to run the main scene. Works with your own launcher scripts.</li>
             <li><b>Play again</b>: when the game ends, Stop turns into Play and restarts the scene in the same
-                tab.</li>
+                tab, with Debug next to it.</li>
             <li><b>Screen shapes</b>: preview at 21:9, 16:10, 16:9, 4:3 or a phone screen (portrait or sideways),
                 fitted to the panel's width and height, or let the game fill the whole panel.</li>
             <li><b>Screenshots, mute and game speed</b> right in the preview's toolbar. Screenshots can render
@@ -26,7 +26,8 @@
             <li><b>Windowless on macOS</b>: no stray Godot window, no Dock icon, and a game that captures the
                 mouse can't take over your cursor.</li>
             <li>&#9888;&#65039; <b>Breakpoints (experimental)</b>: with the Godot editor's debug server open, Debug a scene and
-                breakpoints and stepping work through Rider's GDScript debugger, and the view shows a pause overlay while stopped.</li>
+                breakpoints and stepping work through Rider's GDScript debugger, and the view shows a pause overlay while stopped,
+                with the error and a link to the line.</li>
         </ul>
 
         <h3>Requirements</h3>
