@@ -2,6 +2,8 @@ package com.sleepyfant.godotembedplay.view
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -74,6 +76,8 @@ class GelViewPanel(
     private val project: Project,
     private val session: GelSession,
     private val hiDpi: Boolean,
+    /** Started with Debug: losing breakpoints is worth a warning, not just the status label. */
+    private val debugging: Boolean,
     private val replay: () -> Unit,
 ) : JPanel(BorderLayout()), GelSession.Listener {
 
@@ -242,6 +246,14 @@ class GelViewPanel(
     private fun showDebugger(relayed: Boolean) {
         if (stopped) return
         debugLabel.text = if (relayed) "· breakpoints: Godot editor / Rider" else "· breakpoints off (no Godot editor debug server)"
+        if (!relayed && debugging) {
+            NotificationGroupManager.getInstance().getNotificationGroup("Godot Embed Play").createNotification(
+                "Breakpoints are off",
+                "The Godot editor's debug server isn't reachable. Open the project in the Godot editor, " +
+                    "turn on Debug → Keep Debug Server Open, then debug again.",
+                NotificationType.WARNING,
+            ).notify(project)
+        }
     }
 
     override fun onDebugPaused(reason: String) {
