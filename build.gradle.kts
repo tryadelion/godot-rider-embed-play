@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.sleepyfant"
-version = "0.1.2"
+version = "0.1.3"
 
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
@@ -56,6 +56,10 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.1.3</h3>
+            <ul>
+              <li>Replace a platform API scheduled for removal, so newer IDE builds no longer flag the plugin.</li>
+            </ul>
             <h3>0.1.2</h3>
             <ul>
               <li>Play again: once a game ends, whether by Stop, the Run window or the game quitting on its own,

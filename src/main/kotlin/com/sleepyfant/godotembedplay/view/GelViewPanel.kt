@@ -15,8 +15,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.JBColor
-import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -88,7 +88,7 @@ class GelViewPanel(
     private val rotateToolbar = createToolbar(RotateAction())
     private val speedBox = ComboBox(SPEEDS).apply {
         selectedItem = 1f
-        renderer = SimpleListCellRenderer.create("") { formatSpeed(it) }
+        renderer = textListCellRenderer { it?.let(::formatSpeed) }
         toolTipText = "Game speed (Engine.time_scale)"
         addActionListener { session.sendTimeScale(selectedItem as Float) }
     }

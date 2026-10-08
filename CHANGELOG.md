@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 — 2026-10-08
+
+- Replace a platform API scheduled for removal (game speed list renderer), so newer IDE builds no longer
+  flag the plugin.
+
 ## 0.1.2 — 2026-09-29
 
 - **Play again.** Once a game ends, whether by Stop, the Run window or the game quitting on its own,
